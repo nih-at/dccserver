@@ -1,6 +1,7 @@
 2003-04-07  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
 
 	* dccserver.mdoc: document "quit".
+	* dccserver.man: regen.
 
 	* NEWS:	0.3 RELEASED
 

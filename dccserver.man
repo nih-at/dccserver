@@ -1,6 +1,6 @@
 .\" Converted with mdoc2man 0.2
-.\" from NiH: dccserver.mdoc,v 1.10 2003/04/07 10:26:31 wiz Exp 
-.\" $NiH: dccserver.mdoc,v 1.10 2003/04/07 10:26:31 wiz Exp $
+.\" from NiH: dccserver.mdoc,v 1.11 2003/04/07 13:16:41 wiz Exp 
+.\" $NiH: dccserver.mdoc,v 1.11 2003/04/07 13:16:41 wiz Exp $
 .\"
 .\" Copyright (c) 2002, 2003 Thomas Klausner.
 .\" All rights reserved.
@@ -106,8 +106,13 @@ Please note that the
 ``:''
 and the space are necessary.
 .PP
+You can enter
+``quit''
+(without a prepended child ID)
+to close all connections and exit the program.
+.PP
 Text coming from the remote clients will be shown prepended by their
-nickname.
+nickname and child ID.
 .SH "EXAMPLES"
 Typical usage:
 .PP
