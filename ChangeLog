@@ -1,5 +1,8 @@
 2003-01-28  Thomas Klausner  <wiz@dmath5.geometrie.tuwien.ac.at>
 
+	* dccserver.c (get_file): only warn if we really get more than
+	expected, not if we just get all the bytes.
+
 	* dccserver.mdoc: remove a superfluous word.
 	* dccserver.man: regen.
 

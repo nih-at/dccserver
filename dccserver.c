@@ -1,4 +1,4 @@
-/* $NiH: dccserver.c,v 1.28 2003/01/22 17:32:40 wiz Exp $ */
+/* $NiH: dccserver.c,v 1.29 2003/01/23 10:26:48 wiz Exp $ */
 /*-
  * Copyright (c) 2002, 2003 Thomas Klausner.
  * All rights reserved.
@@ -173,7 +173,7 @@ get_file(FILE *fp)
 	}
 	rem -= len;
 
-	if (rem <= 0 && exceed_warning_shown == 0) {
+	if (rem < 0 && exceed_warning_shown == 0) {
 	    exceed_warning_shown = 1;
 	    warnx("getting more than %ld bytes for `%s'",
 		  filesize, filename);
