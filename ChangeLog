@@ -1,7 +1,8 @@
 2003-03-29  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
 
 	* dccserver.mdoc: document -e.
-	
+	* dccserver.man: regen.
+
 	* dccserver.c (main): add option (-e) to echo input.
 	(usage): mention -e.
 	(handle_input): echo input if flag set.

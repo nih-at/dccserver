@@ -1,6 +1,6 @@
 .\" Converted with mdoc2man 0.2
-.\" from NiH: dccserver.mdoc,v 1.4 2003/03/29 10:54:21 wiz Exp 
-.\" $NiH: dccserver.mdoc,v 1.4 2003/03/29 10:54:21 wiz Exp $
+.\" from NiH: dccserver.mdoc,v 1.5 2003/03/29 11:16:22 wiz Exp 
+.\" $NiH: dccserver.mdoc,v 1.5 2003/03/29 11:16:22 wiz Exp $
 .\"
 .\" Copyright (c) 2002, 2003 Thomas Klausner.
 .\" All rights reserved.
@@ -50,6 +50,16 @@ are done.
 .PP
 Supported options:
 .RS
+.TP 15
+\fB-e\fR
+Echo lines input by the user.
+Useful e.g. if you are using dccserver in an
+irssi(1)
+window (see also the
+\fB-i\fR
+option and the
+section EXAMPLES
+section).
 .TP 15
 \fB-h\fR
 Display a short help message.
