@@ -1,6 +1,6 @@
-.\" $NiH$
+.\" $NiH: dccserver.mdoc,v 1.1 2002/10/16 13:55:32 wiz Exp $
 .\"
-.\" Copyright (c) 2002 Thomas Klausner.
+.\" Copyright (c) 2002, 2003 Thomas Klausner.
 .\" All rights reserved.
 .\"
 .\" Redistribution and use in source and binary forms, with or without
@@ -11,10 +11,10 @@
 .\" 2. Redistributions in binary form must reproduce the above
 .\"    copyright notice, this list of conditions and the following
 .\"    disclaimer in the documentation and/or other materials provided
-.\"    with the distribution. 
+.\"    with the distribution.
 .\" 3. The name of the author may not be used to endorse or promote
 .\"    products derived from this software without specific prior
-.\"    written permission.  
+.\"    written permission.
 .\"
 .\" THIS SOFTWARE IS PROVIDED BY THOMAS KLAUSNER ``AS IS'' AND ANY
 .\" EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -28,7 +28,7 @@
 .\" OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
 .\" OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
-.Dd October 16, 2002
+.Dd January 22, 2003
 .Dt DCCSERVER 1
 .Os
 .Sh NAME
@@ -64,7 +64,11 @@ Defaults to
 Listen for connections on port
 .Ar port .
 Defaults to 59, since that is MIRC's default port.
-Please note that you have to be root to bind to ports below 1024.
+Please note that you have to have root privileges to bind to ports
+below 1024.
+See
+.Sx SECURITY CONSIDERATIONS
+below.
 .It Fl v
 Display program name and version number.
 .El
@@ -79,7 +83,7 @@ is the number of the child, and
 .Dq <text>
 the text you want to send.
 For example:
-.Dl 0: dir
+.Dq 0:\ dir .
 Please note that the
 .Dq \&:
 and the space are necessary.
@@ -95,8 +99,24 @@ Get and Fserve modes are not yet supported.
 .Pp
 There are no timeouts yet.
 .Pp
-The program should probably be setuid to handle ports below 1024
-better.
-.Pp
 It is not easy to see which child number corresponds to which remote
 client (nickname).
+.Sh SECURITY CONSIDERATIONS
+MIRC's default port is 59.
+To bind to ports below 1024, one needs root privileges; for this reason
+.Nm
+is installed setuid root.
+To limit damage done if in case of trouble,
+.Nm
+.Xr chroot 2 Ns s
+itself in the current directory and drops the setuid privileges as soon
+as possible.
+.Pp
+Alternatively, you can remove the setuid bit from
+.Nm
+with
+.Dq Ic chmod u-s /path/to/dccserver
+with the limitation that you will only be able to use
+.Nm
+on ports above 1024, and you won't get the effect of
+.Xr chroot 2 .
