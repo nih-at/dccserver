@@ -1,5 +1,8 @@
 2003-01-22  Thomas Klausner  <wiz@dmath5.geometrie.tuwien.ac.at>
 
+	* dccserver.mdoc: update for using chroot and setuid.
+	* dccserver.man: regen.
+
 	* dccserver.c: allow receiving more than expected number of
 	bytes, but show a warning. From Per von Zweigbergk
 	<pvz@e.kth.se>.
