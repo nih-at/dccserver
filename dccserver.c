@@ -1,4 +1,4 @@
-/* $NiH: dccserver.c,v 1.31 2003/03/29 10:54:21 wiz Exp $ */
+/* $NiH: dccserver.c,v 1.32 2003/03/29 11:05:12 wiz Exp $ */
 /*-
  * Copyright (c) 2002, 2003 Thomas Klausner.
  * All rights reserved.
@@ -76,6 +76,7 @@ void warnx(const char *, ...);
 typedef enum state_e { ST_NONE, ST_CHAT, ST_FSERVE, ST_SEND, ST_GET,
 		       ST_END } state_t;
 
+static int echo_input;
 static char filename[1024];
 static long filesize;
 static int filter_control_chars;
@@ -463,7 +464,7 @@ usage(void)
 
     fprintf(stderr, "%s: emulate mirc's /dccserver command\n\n"
 	    "Usage:\n"
-	    "%s [-hiv] [-n nickname] [-p port]\n"
+	    "%s [-ehiv] [-n nickname] [-p port]\n"
 	    "Where port is the port on which %s should listen,\n"
 	    "and nickname the nick that should be used (defaults are 59 "
 	    "and 'dccserver').\n", prg, prg, prg);
@@ -480,6 +481,11 @@ handle_input(void)
 
     if (fgets(buf, sizeof(buf), stdin) == NULL)
 	return;
+
+    if (echo_input) {
+	fputs(buf, stdout);
+	fflush(stdout);
+    }
 
     child = strtol(buf, &end, 10);
     if ((child >= 0 && child < NO_OF_CHILDREN) && end[0] == ':'
@@ -511,6 +517,8 @@ main(int argc, char *argv[])
     struct pollfd pollset[2];
 
     strlcpy(nickname, "dccserver", sizeof(nickname));
+    /* do not echo lines entered by default */
+    echo_input = 0;
     /* default to filtering out control characters */
     filter_control_chars = 1;
     port = 59;
@@ -530,10 +538,14 @@ main(int argc, char *argv[])
     else if (chdir("/") == -1)
 	warn("can't chdir to \"/\" in chroot");
 
-    while ((c=getopt(argc, argv, "hin:p:v")) != -1) {
+    while ((c=getopt(argc, argv, "ehin:p:v")) != -1) {
 	switch(c) {
 	case 'h':
 	    usage();
+
+	case 'e':
+	    echo_input = 1;
+	    break;
 
 	case 'i':
 	    filter_control_chars = 0;

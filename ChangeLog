@@ -1,11 +1,17 @@
 2003-03-29  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
 
-	* dccserver.c (main): Add fflush(stdout)
-	(display_remote_line): here too. From Rudolf Polzer.
+	* dccserver.mdoc: document -e.
+	
+	* dccserver.c (main): add option (-e) to echo input.
+	(usage): mention -e.
+	(handle_input): echo input if flag set.
+	Idea for -e from Robert Polzer.
 
-	* dccserver.man: regen for -i
+	* dccserver.c (main): add fflush(stdout).
+	(display_remote_line): Here too. From Rudolf Polzer.
 
-	* dccserver.mdoc: document -i option
+	* dccserver.mdoc: document -i option.
+	* dccserver.man: regen.
 
 	* dccserver.c (main): add option (-i) to not filter out control
 	characters.
