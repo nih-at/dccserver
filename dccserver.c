@@ -1,4 +1,35 @@
-/* $NiH: dccserver.c,v 1.13 2002/10/14 23:39:23 wiz Exp $ */
+/* $NiH: dccserver.c,v 1.14 2002/10/14 23:48:11 wiz Exp $ */
+/*-
+ * Copyright (c) 2002 Thomas Klausner.
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above
+ *    copyright notice, this list of conditions and the following
+ *    disclaimer in the documentation and/or other materials provided
+ *    with the distribution. 
+ * 3. The name of the author may not be used to endorse or promote
+ *    products derived from this software without specific prior
+ *    written permission.  
+ *
+ * THIS SOFTWARE IS PROVIDED BY THOMAS KLAUSNER ``AS IS'' AND ANY
+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE FOUNDATION OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF
+ * USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+ * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ */
+  
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
@@ -170,6 +201,7 @@ parse_get_line(unsigned char *line)
     return 0;
 }    
 
+/* signal handler */
 void
 sig_handle(int signal)
 {
@@ -184,6 +216,7 @@ sig_handle(int signal)
     return;
 }
 
+/* parse line from client, update state machine, and reply */
 state_t
 converse_with_client(FILE *fp, state_t state, unsigned char *line)
 {
@@ -311,6 +344,7 @@ converse_with_client(FILE *fp, state_t state, unsigned char *line)
     return ret;
 }
 
+/* main child routine: read line from client and call parser */
 void
 communicate_with_client(int sock)
 {
@@ -347,7 +381,10 @@ communicate_with_client(int sock)
     exit(0);
 }
 
-
+/*
+ * create child to handle connection and update structure trackig
+ * children
+ */
 void
 handle_connection(int sock)
 {
@@ -395,6 +432,7 @@ usage(void)
     exit(1);
 }
 
+/* handle input from user */
 void
 handle_input(void)
 {
@@ -418,6 +456,11 @@ handle_input(void)
 
     return;
 }
+
+/*
+ * set up server listening on connections and input from user, and
+ * call appropriate functions to handle them
+ */
 int
 main(int argc, char *argv[])
 {
@@ -497,6 +540,7 @@ main(int argc, char *argv[])
 	socklen_t raddrlen;
 	int new_sock;
 
+	/* clean up after dead children */
 	while (sigchld > 0) {
 	    int i;
 	    int status;
@@ -518,6 +562,7 @@ main(int argc, char *argv[])
 	    }
 	}
 
+	/* poll for events from network and user */
 	pollset[0].fd = 0;
 	pollset[0].events = POLLIN|POLLPRI;
 	pollset[0].revents = 0;
