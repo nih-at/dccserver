@@ -10,6 +10,8 @@ Planned changes
   . close specific connections
 . add option to create per-remote download dirs
 . regression tests
+. make configure.ac/Makefile.am smarter -- not both programs need
+  all replacement functions
 
 Possible changes
 . add quit command
@@ -18,7 +20,6 @@ Possible changes
 . bind to specific IP only
 . disallow particular clients
 . readline
-. write dccclient
 
 Might want to fix:
 hppa11: dccserver.c: In function `main':
