@@ -1,4 +1,4 @@
-/* $NiH: dccserver.c,v 1.46 2003/04/12 13:34:50 wiz Exp $ */
+/* $NiH: dccserver.c,v 1.47 2003/04/15 13:06:56 wiz Exp $ */
 /*-
  * Copyright (c) 2002, 2003 Thomas Klausner.
  * All rights reserved.
@@ -680,20 +680,16 @@ main(int argc, char *argv[])
 
     while ((c=getopt(argc, argv, "ehin:p:v")) != -1) {
 	switch(c) {
-	case 'h':
-	    usage();
-
 	case 'e':
 	    echo_input = 1;
 	    break;
 
+	case 'h':
+	    usage();
+
 	case 'i':
 	    filter_control_chars = 0;
 	    break;
-
-	case 'v':
-	    puts(PACKAGE_STRING);
-	    exit(0);
 
 	case 'n':
 	    strlcpy(nickname, optarg, sizeof(nickname));
@@ -709,6 +705,10 @@ main(int argc, char *argv[])
 	    port_count++;
 
 	    break;
+
+	case 'v':
+	    puts(PACKAGE_STRING);
+	    exit(0);
 
 	default:
 	    /* unreachable */
