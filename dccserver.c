@@ -1,4 +1,4 @@
-/* $NiH: dccserver.c,v 1.33 2003/03/29 11:16:22 wiz Exp $ */
+/* $NiH: dccserver.c,v 1.34 2003/04/02 09:25:45 wiz Exp $ */
 /*-
  * Copyright (c) 2002, 2003 Thomas Klausner.
  * All rights reserved.
@@ -200,6 +200,20 @@ get_file(FILE *fp)
     return -1;
 }
 
+/* some fserves incorrectly include the complete path -- */
+/* strip it off */
+static char *
+strip_path(char *p)
+{
+    char *q;
+
+    if ((q=strrchr(p, '/')) != NULL)
+	p = ++q;
+    if ((q=strrchr(p, '\\')) != NULL)
+	p = ++q;
+
+    return p;
+}
 /* parse line given by remote client */
 int
 parse_get_line(char *line)
@@ -220,9 +234,10 @@ parse_get_line(char *line)
     if (*q == '\0' || *endptr != '\0' || (filesize <=0))
 	return -1;
 
-    q = p+1;
+    /* remove path components in file name */
+    q = strip_path(p+1);
     strlcpy(filename, q, sizeof(filename));
-    if ((strlen(filename) == 0) || (strchr(filename, '/') != NULL))
+    if (strlen(filename) == 0)
 	return -1;
 
     return 0;

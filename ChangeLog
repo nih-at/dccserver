@@ -1,3 +1,14 @@
+2003-04-02  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
+
+	* dccserver.c (parse_get_line): use strip_path to remove path
+	components from filename. Requested by Athanasius.
+	(strip_path): new function.
+
+	* THANKS: new file.
+
+	* Makefile.am (EXTRA_DIST): remove README; should be included
+	automatically.
+
 2003-04-01  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
 
 	* dccserver.c (main): remove seteuid call, it was
