@@ -3,8 +3,8 @@ dnl Process this file with autoconf to produce a configure script.
 dnl init
 
 AC_PREREQ(2.57)
-AC_REVISION([$NiH: configure.ac,v 1.15 2003/04/04 12:29:38 wiz Exp $])
-AC_INIT([dccserver],[0.2.1],[tk@giga.or.at])
+AC_REVISION([$NiH: configure.ac,v 1.16 2003/04/04 13:44:06 wiz Exp $])
+AC_INIT([dccserver],[0.3],[tk@giga.or.at])
 AC_CONFIG_SRCDIR([dccserver.c])
 AC_CONFIG_HEADERS([config.h])
 AM_INIT_AUTOMAKE
