@@ -1,3 +1,9 @@
+. handle partly-filled buffer in fdgets
+. set up write/read and then copy in main loop
+. how to handle write_complete better?
+. global connection_closed flag?
+. split up in more files to make it easier to find something
+
 Planned changes
 . make it easier to find out which child does what (SIGINFO?)
 . timeouts
