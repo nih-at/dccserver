@@ -1,3 +1,4 @@
+/* $NiH$ */
 /*	$NetBSD: strlcpy.c,v 1.12 2002/04/24 17:45:15 bjh21 Exp $	*/
 /*	$OpenBSD: strlcpy.c,v 1.4 1999/05/01 18:56:41 millert Exp $ 	*/
 

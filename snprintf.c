@@ -1,3 +1,4 @@
+/* $NiH$ */
 /*
  * Copyright (c) 1995-2001 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden).
@@ -36,7 +37,7 @@
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #if 0
-RCSID("$Id: snprintf.c,v 1.2 2002/01/31 19:23:14 tv Exp $");
+RCSID("$Id: snprintf.c,v 1.1 2002/10/15 23:25:52 wiz Exp $");
 #endif
 #endif
 #include <stdio.h>
