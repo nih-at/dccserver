@@ -1,4 +1,4 @@
-/* $NiH: dccserver.c,v 1.55 2003/05/11 00:17:02 wiz Exp $ */
+/* $NiH: dccserver.c,v 1.56 2003/05/11 00:37:14 wiz Exp $ */
 /*-
  * Copyright (c) 2002, 2003 Thomas Klausner.
  * All rights reserved.
@@ -94,7 +94,7 @@ sig_handle(int signo)
  * children
  */
 void
-handle_connection(int sock, int oldsock)
+handle_connection(int sock)
 {
     pid_t child;
     int i;
@@ -111,9 +111,13 @@ handle_connection(int sock, int oldsock)
 	return;
     }
 
+    if (fcntl(sock, F_SETFL, O_NONBLOCK) == -1) {
+	(void)close(sock);
+	err(1, "can't set socket to non-blocking");
+    }
+
     switch(child=fork()) {
     case 0:
-	close(oldsock);
 	child_loop(sock, i);
 	/* UNREACHABLE */
 	_exit(1);
@@ -391,6 +395,18 @@ main(int argc, char *argv[])
 	    }
 	}
 
+	/* display status if requested */
+	if (siginfo > 0) {
+	    int count;
+
+	    siginfo = 0;
+	    for (count=i=0; i<NO_OF_CHILDREN; i++) {
+		if (children[i].pid != -1)
+		    count++;
+	    }
+	    warnx("%d running children", count);
+	}
+
 	/* poll for events from network and user */
 	/* user */
 	pollset[port_count].fd = 0;
@@ -434,7 +450,7 @@ main(int argc, char *argv[])
 		fflush(stdout);
 
 		/* do something */
-		handle_connection(new_sock, listen_socket[i]);
+		handle_connection(new_sock);
 	    }
 	}
     }
