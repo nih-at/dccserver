@@ -4,3 +4,9 @@
 . make it easier to find out which child does what
 . timeouts
 . don't send data to 'Send' connections -- they quit in this case
+. download speed indicator
+. display time after download
+. some commands to dccserver:
+  . show open connections (to who, type, time, transferred data)
+  . close specific connections
+. disallow particular clients?
