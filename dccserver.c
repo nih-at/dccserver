@@ -1,4 +1,4 @@
-/* $NiH: dccserver.c,v 1.5 2002/10/13 23:42:28 wiz Exp $ */
+/* $NiH: dccserver.c,v 1.6 2002/10/14 16:07:15 wiz Exp $ */
 #include <sys/socket.h>
 #include <sys/wait.h>
 #include <netinet/in.h>
@@ -6,6 +6,7 @@
 #include <err.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <poll.h>
 #include <signal.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -28,7 +29,14 @@ static long filesize;
 static char partner[100];
 
 volatile int sigchld = 0;
-volatile int sigint = 0;
+
+#define NO_OF_CHILDREN 100
+typedef struct child_s {
+    int sock;
+    pid_t pid;
+} child_t;
+
+child_t children[NO_OF_CHILDREN];
 
 #ifndef MIN
 #define MIN(a, b)	((a) < (b) ? (a) : (b))
@@ -69,8 +77,12 @@ get_file(FILE *fp)
     /* XXX: more checks */
     if ((out=open(filename, O_WRONLY|O_CREAT|O_EXCL, 0644)) == -1) {
 	warn("can't open file `%s' for writing",  filename);
+	tell_client(fp, 151, NULL);
 	return -1;
     }
+
+    /* XXX: resume */
+    tell_client(fp, 121, "0");
 
     rem = filesize;
     while((len=fread(buf, 1, MIN(rem, sizeof(buf)), fp)) > 0) {
@@ -130,10 +142,7 @@ sig_handle(int signal)
 {
     switch(signal) {
     case SIGCHLD:
-	sigchld++;
-	break;
-    case SIGINT:
-	sigint++;
+	sigchld = 1;
 	break;
     default:
 	break;
@@ -146,6 +155,7 @@ state_t
 converse_with_client(FILE *fp, state_t state, char *line)
 {
     state_t ret;
+    char *p;
 
     ret = state;
     switch(state) {
@@ -173,8 +183,9 @@ converse_with_client(FILE *fp, state_t state, char *line)
 		break;
 	    }
 
-	    /* XXX: resume */
-	    tell_client(fp, 121, "0");
+	    warnx("getting file `%s' (%ld bytes) from %s", filename,
+		  filesize, partner);
+
 	    get_file(fp);
 	    ret = ST_END;
 	}
@@ -194,7 +205,28 @@ converse_with_client(FILE *fp, state_t state, char *line)
 	break;
 
     case ST_CHAT:
-	printf("<%s> %s\n", partner, line);
+	printf("<%s>", partner);
+	p = line;
+	while (*p) {
+	    switch (*p) {
+	    case 0x2:
+	    case 0xf:
+	    case 0x1f:
+		break;
+	    case 0x3:
+		if (p[1] != '\0')
+		    p++;
+		if (p[1] != '\0')
+		    p++;
+		break;
+		
+	    default:
+		putchar(*p);
+		break;
+	    }
+	    p++;
+	}
+	putchar('\n');
 	break;
 
     case ST_FSERVE:
@@ -258,6 +290,7 @@ void
 handle_connection(int sock)
 {
     pid_t child;
+    int i;
 
     switch(child=fork()) {
     case 0:
@@ -273,6 +306,16 @@ handle_connection(int sock)
 	break;
     }
 
+    for (i=0; i<NO_OF_CHILDREN; i++) {
+	if (children[i].pid == -1) {
+	    children[i].pid = child;
+	    children[i].sock = sock;
+	    warnx("child %d started (pid %d)", i, child);
+	    return;
+	}
+    }
+
+    warnx("too many children");
     close(sock);
     return;
 }
@@ -290,18 +333,45 @@ usage(void)
     exit(1);
 }
 
+void
+handle_input(void)
+{
+    char buf[8192];
+    int child;
+    char *end;
+
+    if (fgets(buf, sizeof(buf), stdin) == NULL)
+	return;
+
+    child = strtol(buf, &end, 10);
+    if ((child >= 0 && child < NO_OF_CHILDREN) && end[0] == ':'
+	&& end[1] == ' ') {
+	if (children[child].pid == -1) {
+	    warnx("child %d is dead", child);
+	    return;
+	}
+
+	write(children[child].sock, end+2, strlen(end+2));
+    }
+
+    return;
+}
 int
 main(int argc, char *argv[])
 {
     char *endptr;
     int sock, sock_opt;
     int c;
+    int pollret;
     long port;
     struct sockaddr_in laddr;
+    struct pollfd pollset[2];
 
     snprintf(nickname, sizeof(nickname), "dccserver");
     port = 59;
     prg = argv[0];
+    for (c=0; c<NO_OF_CHILDREN; c++)
+	children[c].pid = -1;
 
     signal(SIGCHLD, sig_handle);
 
@@ -366,25 +436,63 @@ main(int argc, char *argv[])
 	int new_sock;
 
 	while (sigchld > 0) {
+	    int i;
 	    int status;
+	    pid_t deadpid;
 
-	    sigchld--;
-	    wait(&status);
+	    while (((deadpid=waitpid(-1, &status, WNOHANG)) != -1)
+		   && deadpid != 0) {
+		sigchld = 0;
+		for (i=0; i<NO_OF_CHILDREN; i++) {
+		    if (children[i].pid == deadpid) {
+			children[i].pid = -1;
+			close(children[i].sock);
+			warnx("child %d died", i);
+			break;
+		    }
+		}
+		if (i == NO_OF_CHILDREN)
+		    warnx("child %ld found dead, but unknown", (long)deadpid);
+	    }
 	}
 
-	raddrlen = sizeof(raddr);
-	if ((new_sock=accept(sock, (struct sockaddr *)&raddr,
-			     &raddrlen))  == -1) {
-	    if ((errno != EINTR) && (errno != ECONNABORTED))
-		warn("accept failed");
+	pollset[0].fd = 0;
+	pollset[0].events = POLLIN|POLLPRI;
+	pollset[0].revents = 0;
+	pollset[1].fd = sock;
+	pollset[1].events = POLLIN|POLLPRI;
+	pollset[1].revents = 0;
+
+	if ((pollret=poll(pollset, 2, 500)) == -1) {
+	    if (errno != EINTR)
+		warn("poll error");
 	    continue;
 	}
 
-	(void)printf("Connection from %s/%d\n",
-		     inet_ntoa(raddr.sin_addr), ntohs(raddr.sin_port));
+	if (pollret == 0)
+	    continue;
 
-	/* do something */
-	handle_connection(new_sock);
+	if (pollset[0].revents != 0) {
+	    /* some data from stdin */
+
+	    handle_input();
+	}
+	if (pollset[1].revents != 0) {
+	    /* some data from network */
+	    raddrlen = sizeof(raddr);
+	    if ((new_sock=accept(sock, (struct sockaddr *)&raddr,
+				 &raddrlen))  == -1) {
+		if ((errno != EINTR) && (errno != ECONNABORTED))
+		    warn("accept failed");
+		continue;
+	    }
+
+	    (void)printf("Connection from %s/%d\n",
+			 inet_ntoa(raddr.sin_addr), ntohs(raddr.sin_port));
+
+	    /* do something */
+	    handle_connection(new_sock);
+	}
     }
 
     return 0;
