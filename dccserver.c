@@ -1,4 +1,4 @@
-/* $NiH: dccserver.c,v 1.54 2003/05/10 21:58:46 wiz Exp $ */
+/* $NiH: dccserver.c,v 1.55 2003/05/11 00:17:02 wiz Exp $ */
 /*-
  * Copyright (c) 2002, 2003 Thomas Klausner.
  * All rights reserved.
@@ -29,75 +29,32 @@
  * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-  
-#include "config.h"
+
+#include "dccserver.h"
 
 #include <sys/types.h>
 #include <sys/socket.h>
-#include <sys/stat.h>
-#include <sys/time.h>
 #include <sys/wait.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#ifdef HAVE_ERR_H
-#include <err.h>
-#endif /* HAVE_ERR_H */
-#include <errno.h>
-#include <fcntl.h>
-#ifdef HAVE_POLL_H
-#include <poll.h>
-#elif HAVE_SYS_POLL_H
-#include <sys/poll.h>
-#else
-#warning Neither poll.h nor sys/poll.h found -- compilation will probably fail.
-#warning In that case, read the included README.Darwin.
-#endif /* HAVE_POLL_H || HAVE_SYS_POLL_H */
 #include <signal.h>
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
 
 #ifndef HAVE_SOCKLEN_T
 typedef unsigned int socklen_t;
 #endif
 
-#ifndef HAVE_STRLCPY
-size_t strlcpy(char *, const char *, size_t);
-#endif
-
-#ifndef HAVE_ERR
-void err(int, const char *, ...);
-#endif
-
-#ifndef HAVE_WARN
-void warn(const char *, ...);
-#endif
-
-#ifndef HAVE_WARNX
-void warnx(const char *, ...);
-#endif
-
-extern void child_loop(int sock, int id);
-
 /* backlog argument for listen() */
 #define BACKLOG 10
 
-typedef enum state_e { ST_NONE, ST_CHAT, ST_FSERVE, ST_SEND, ST_GET,
-		       ST_GETFILE, ST_END } state_t;
-
-static int echo_input;
-static int filter_control_chars;
+/* option arguments/toggles */
+int filter_control_chars;
 char nickname[1024];
-#if 0
-char partner[100];
-#endif
-extern char partner[];
-static const char *prg;
+
+/* signal handler variables */
 
 volatile int sigchld = 0;
 volatile int siginfo = 0;
+
 
 #define NO_OF_CHILDREN 100
 typedef struct child_s {
@@ -112,83 +69,6 @@ child_t children[NO_OF_CHILDREN];
 int listen_port[NO_OF_LISTEN_PORTS];
 int listen_socket[NO_OF_LISTEN_PORTS];
 
-
-/* some fserves incorrectly include the complete path -- */
-/* strip it off */
-char *
-strip_path(char *p)
-{
-    char *q;
-
-    if ((q=strrchr(p, '/')) != NULL)
-	p = ++q;
-    if ((q=strrchr(p, '\\')) != NULL)
-	p = ++q;
-
-    return p;
-}
-
-
-/* display line given from remote; filter out some characters */
-/* assumes ASCII text */
-void
-display_remote_line(int id, const unsigned char *p)
-{
-    printf("<%d: %s> ", id, partner);
-    while (*p) {
-	if (*p > 0x7f) {
-	    putchar('.');
-	    p++;
-	    continue;
-	}
-	if (filter_control_chars) {
-	    switch (*p) {
-	    case 0x03:
-		/* skip control-C */
-		p++;
-		/*
-		 * syntax: ^CN[,M] -- 0<=N<=99, 0<=M<=99, N fg, M bg,
-		 *         or ^C to turn color off
-		 */
-		/* fg */
-		if ('0' <= *p && *p <= '9') {
-		    if ('0' <= p[1] && p[1] <= '9') {
-			p++;
-		    }
-		    p++;
-		    /* bg */
-		    if (*p == ',' && '0' <= p[1] && p[1] <='9') {
-			p+=2;
-			if ('0' <= *p && *p <= '9') {
-			    p++;
-			}
-		    }
-		}
-		continue;
-
-	    case 0x02:
-		/* bold */
-	    case 0x0f:
-		/* plain text */
-	    case 0x12:
-		/* reverse */
-	    case 0x15:
-		/* underlined */
-	    case 0x1f:
-		break;
-		
-	    default:
-		putchar(*p);
-		break;
-	    }
-	} else {
-	    putchar(*p);
-	}
-	p++;
-    }
-    putchar('\n');
-    fflush(stdout);
-}
 
 /* signal handler */
 void
@@ -255,7 +135,7 @@ handle_connection(int sock, int oldsock)
 }
 
 void
-usage(void)
+usage(const char *prg)
 {
 
     fprintf(stderr, "%s: emulate mirc's /dccserver command\n\n"
@@ -269,7 +149,7 @@ usage(void)
 
 /* handle input from user */
 int
-handle_input(void)
+handle_input(int echo_input)
 {
     char buf[8192];
     int child;
@@ -395,6 +275,7 @@ main(int argc, char *argv[])
 {
     char *endptr;
     int c, i;
+    int echo_input;
     int pollret;
     int port, port_count;
     struct pollfd *pollset;
@@ -409,7 +290,6 @@ main(int argc, char *argv[])
 	listen_socket[i] = -1;
     }
     port_count = 0;
-    prg = argv[0];
 
     while ((c=getopt(argc, argv, "ehin:p:v")) != -1) {
 	switch(c) {
@@ -418,7 +298,7 @@ main(int argc, char *argv[])
 	    break;
 
 	case 'h':
-	    usage();
+	    usage(argv[0]);
 
 	case 'i':
 	    filter_control_chars = 0;
@@ -431,7 +311,7 @@ main(int argc, char *argv[])
 	case 'p':
 	    port = strtol(optarg, &endptr, 10);
 	    if (*optarg == '\0' || *endptr != '\0')
-		usage();
+		usage(argv[0]);
 	    if (port < 1 || port > 65535)
 		errx(1, "invalid port argument (0 < port < 65536)");
 	    add_listen_port(port);
@@ -535,7 +415,7 @@ main(int argc, char *argv[])
 	if (pollset[port_count].revents != 0) {
 	    /* some data from stdin */
 
-	    if (handle_input() < 0)
+	    if (handle_input(echo_input) < 0)
 		break;
 	}
 	for (i=0; i<port_count; i++) {
