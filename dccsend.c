@@ -1,4 +1,4 @@
-/* $NiH: dccsend.c,v 1.2 2003/04/04 12:28:20 wiz Exp $ */
+/* $NiH: dccsend.c,v 1.3 2003/04/04 12:52:06 wiz Exp $ */
 /*-
  * Copyright (c) 2003 Thomas Klausner.
  * All rights reserved.
@@ -145,18 +145,17 @@ tell_client(FILE *fp, int retcode, char *fmt, ...)
 
 /* send file to network */
 int
-send_file(FILE *fp, char *filename, int filesize)
+send_file(FILE *fp, char *filename, long filesize)
 {
     char buf[8192];
     int len;
     long rem;
     int out;
     struct stat sb;
-    long offset;
     FILE *fin;
 
     if (filesize < offset) {
-	warnx("remote requested part after EOF (%d < %d)", filesize, offset);
+	warnx("remote requested part after EOF (%ld < %ld)", filesize, offset);
 	return -1;
     }
 
@@ -200,8 +199,7 @@ send_file(FILE *fp, char *filename, int filesize)
     return -1;
 }
 
-/* some fserves incorrectly include the complete path -- */
-/* strip it off */
+/* strip path off filename */
 static char *
 strip_path(char *p)
 {
@@ -237,7 +235,7 @@ parse_send_line(char *line)
 
 /* main child routine: read line from client and call parser */
 void
-communicate_with_server(int sock, char *filename, size_t filesize)
+communicate_with_server(int sock, char *filename, long filesize)
 {
     FILE *fp;
     char buf[8192];
