@@ -1,4 +1,4 @@
-/* $NiH: dccserver.c,v 1.24 2002/10/15 23:38:50 wiz Exp $ */
+/* $NiH: dccserver.c,v 1.25 2003/01/22 15:19:17 wiz Exp $ */
 /*-
  * Copyright (c) 2002, 2003 Thomas Klausner.
  * All rights reserved.
@@ -80,10 +80,6 @@ typedef struct child_s {
 
 child_t children[NO_OF_CHILDREN];
 
-#ifndef MIN
-#define MIN(a, b)	((a) < (b) ? (a) : (b))
-#endif
-
 void
 say(const char *line, FILE *fp)
 {
@@ -119,6 +115,7 @@ get_file(FILE *fp)
     int out;
     struct stat sb;
     long offset;
+    int exceed_warning_shown = 0;
 
     if (stat(filename, &sb) == 0) {
 	/* file exists */
@@ -156,7 +153,7 @@ get_file(FILE *fp)
 
     /* get file data into local file */
     rem = filesize - offset;
-    while((len=fread(buf, 1, MIN(rem, sizeof(buf)), fp)) > 0) {
+    while((len=fread(buf, 1, sizeof(buf), fp)) > 0) {
 	if (write(out, buf, len) < len) {
 	    warn("write error on `%s'", filename);
 	    close(out);
@@ -164,8 +161,11 @@ get_file(FILE *fp)
 	}
 	rem -= len;
 
-	if (rem <= 0)
-	    break;
+	if (rem <= 0 && exceed_warning_shown == 0) {
+	    exceed_warning_shown = 1;
+	    warnx("getting more than %ld bytes for `%s'",
+		  filesize, filename);
+	}
     }
 
     if (close(out) == -1)
@@ -173,7 +173,7 @@ get_file(FILE *fp)
 
     if (rem <= 0) {
 	warnx("`%s' complete (%ld/%ld bytes got, %ld new)", filename,
-	      filesize, filesize, filesize-offset);
+	      filesize-rem, filesize, filesize-offset);
 	return 0;
     }
     else {
