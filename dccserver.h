@@ -1,4 +1,4 @@
-/* $NiH: dccserver.h,v 1.4 2003/05/12 21:34:17 wiz Exp $ */
+/* $NiH: dccserver.h,v 1.5 2003/05/14 09:04:45 wiz Exp $ */
 /*-
  * Copyright (c) 2003 Thomas Klausner.
  * All rights reserved.
@@ -30,46 +30,7 @@
  * SUCH DAMAGE.
  */
 
-#include "config.h"
-
-#ifdef HAVE_ERR_H
-#include <err.h>
-#endif /* HAVE_ERR_H */
-#include <errno.h>
-#include <fcntl.h>
-#ifdef HAVE_POLL_H
-#include <poll.h>
-#elif HAVE_SYS_POLL_H
-#include <sys/poll.h>
-#else
-#include "poll.h"
-#endif /* HAVE_POLL_H || HAVE_SYS_POLL_H */
 #include <signal.h>
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-
-#ifndef HAVE_ERR
-void err(int, const char *, ...);
-#endif
-
-#ifndef HAVE_ERRX
-void errx(int, const char *, ...);
-#endif
-
-#ifndef HAVE_STRLCPY
-size_t strlcpy(char *, const char *, size_t);
-#endif
-
-#ifndef HAVE_WARN
-void warn(const char *, ...);
-#endif
-
-#ifndef HAVE_WARNX
-void warnx(const char *, ...);
-#endif
 
 /* typedefs */
 

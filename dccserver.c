@@ -1,4 +1,4 @@
-/* $NiH: dccserver.c,v 1.61 2003/05/11 16:04:19 wiz Exp $ */
+/* $NiH: dccserver.c,v 1.62 2003/05/12 18:44:03 wiz Exp $ */
 /*-
  * Copyright (c) 2002, 2003 Thomas Klausner.
  * All rights reserved.
@@ -30,6 +30,7 @@
  * SUCH DAMAGE.
  */
 
+#include "config.h"
 #include "dccserver.h"
 
 #include <sys/types.h>
@@ -37,9 +38,46 @@
 #include <sys/wait.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#ifdef HAVE_ERR_H
+#include <err.h>
+#endif /* HAVE_ERR_H */
+#include <errno.h>
+#include <fcntl.h>
+#ifdef HAVE_POLL_H
+#include <poll.h>
+#elif HAVE_SYS_POLL_H
+#include <sys/poll.h>
+#else
+#include "poll.h"
+#endif /* HAVE_POLL_H || HAVE_SYS_POLL_H */
+#include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
+#ifndef HAVE_ERR
+void err(int, const char *, ...);
+#endif
+
+#ifndef HAVE_ERRX
+void errx(int, const char *, ...);
+#endif
 
 #ifndef HAVE_SOCKLEN_T
 typedef unsigned int socklen_t;
+#endif
+
+#ifndef HAVE_STRLCPY
+size_t strlcpy(char *, const char *, size_t);
+#endif
+
+#ifndef HAVE_WARN
+void warn(const char *, ...);
+#endif
+
+#ifndef HAVE_WARNX
+void warnx(const char *, ...);
 #endif
 
 #ifndef SIGINFO

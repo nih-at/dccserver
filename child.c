@@ -1,4 +1,4 @@
-/* $NiH: child.c,v 1.14 2003/05/14 09:06:01 wiz Exp $ */
+/* $NiH: child.c,v 1.15 2003/05/14 09:21:02 wiz Exp $ */
 /*-
  * Copyright (c) 2003 Thomas Klausner.
  * All rights reserved.
@@ -30,10 +30,48 @@
  * SUCH DAMAGE.
  */
 
+#include "config.h"
 #include "dccserver.h"
 
 #include <sys/stat.h>
 #include <sys/time.h>
+#ifdef HAVE_ERR_H
+#include <err.h>
+#endif /* HAVE_ERR_H */
+#include <errno.h>
+#include <fcntl.h>
+#ifdef HAVE_POLL_H
+#include <poll.h>
+#elif HAVE_SYS_POLL_H
+#include <sys/poll.h>
+#else
+#include "poll.h"
+#endif /* HAVE_POLL_H || HAVE_SYS_POLL_H */
+#include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
+#ifndef HAVE_ERR
+void err(int, const char *, ...);
+#endif
+
+#ifndef HAVE_ERRX
+void errx(int, const char *, ...);
+#endif
+
+#ifndef HAVE_STRLCPY
+size_t strlcpy(char *, const char *, size_t);
+#endif
+
+#ifndef HAVE_WARN
+void warn(const char *, ...);
+#endif
+
+#ifndef HAVE_WARNX
+void warnx(const char *, ...);
+#endif
 
 #include "io.h"
 #include "util.h"
@@ -60,96 +98,6 @@ static char partner[100];
 
 /* maximum number of errors before connection gets closed */
 #define MAX_ERRORS   3
-
-/* return length of string up to and including first new-line character */
-ssize_t
-find_nl(char *buf)
-{
-    char *p;
-    ssize_t ret;
-
-    ret = -1;
-    if ((p=strchr(buf, '\n')) != NULL) {
-	/* include the new-line character */
-	ret = p - buf + 1;
-    }
-
-    return ret;
-}
-
-/* read characters, NUL-terminate buffer */
-ssize_t
-read_some(int fd, char *buf, size_t bufsize)
-{
-    ssize_t bytes_read;
-
-    if (bufsize <= 0)
-	return 0;
-	
-    if ((bytes_read=read(fd, buf, bufsize-1)) >= 0)
-	buf[bytes_read] = '\0';
-
-    return bytes_read;
-}
-
-/* get a new-line-terminated line from fd */
-int
-fdgets(int fd, char *buf, int bufsize)
-{
-    static char intbuf[BUFSIZE+1];
-    static int intbuffill = 0;
-    int ret;
-    int len;
-
-    if (bufsize <= 0)
-	return 0;
-
-    buf[0] = '\0';
-
-    /* get remaining bytes, even if not a complete line */
-    if (fd == -1) {
-	if ((ret=intbuffill) >= bufsize)
-	    ret = bufsize - 1;
-
-	memcpy(buf, intbuf, ret);
-	buf[ret] = '\0';
-	intbuffill -= ret;
-	memmove(intbuf, intbuf+ret, intbuffill+1);
-
-	return ret;
-    }
-
-    while (((ret=find_nl(intbuf)) <= 0) && (intbuffill < bufsize)) {
-	switch (data_available(fd, DIRECTION_READ, CHAT_TIMEOUT)) {
-	case -1:
-	    return -1;
-	case 0:
-	    /* timeout */
-	    return -2;
-	default:
-	    break;
-	}
-	len = read_some(fd, intbuf+intbuffill, sizeof(intbuf)-intbuffill);
-	/* connection closed by remote */
-	if (len == 0)
-	    return 0;
-
-	intbuffill += len;
-	intbuf[intbuffill] = '\0';
-    }
-
-    /* no new-line found, but already more data available than
-     * fits in the output buffer; or line too long */
-    if ((ret <= 0) || (ret >= bufsize))
-	ret = bufsize - 1;
-
-    memcpy(buf, intbuf, ret);
-    buf[ret] = '\0';
-    intbuffill -= ret;
-    memmove(intbuf, intbuf+ret, intbuffill+1);
-
-    return ret;
-}
 
 /* display line given from remote; filter out some characters */
 /* assumes ASCII text */

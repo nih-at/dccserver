@@ -1,4 +1,4 @@
-/* $NiH: io.h,v 1.1 2003/05/14 09:06:01 wiz Exp $ */
+/* $NiH: io.h,v 1.2 2003/05/14 09:21:02 wiz Exp $ */
 /*-
  * Copyright (c) 2003 Thomas Klausner.
  * All rights reserved.
@@ -47,6 +47,7 @@
 
 
 int data_available(int, int, int);
+int fdgets(int, char *, int);
 int tell_client(int, int, char *, ...);
 ssize_t write_complete(int, int, char *);
 

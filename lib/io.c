@@ -1,4 +1,4 @@
-/* $NiH: io.c,v 1.1 2003/05/14 09:06:01 wiz Exp $ */
+/* $NiH: io.c,v 1.2 2003/05/14 09:21:02 wiz Exp $ */
 /*-
  * Copyright (c) 2003 Thomas Klausner.
  * All rights reserved.
@@ -57,6 +57,9 @@ void warnx(const char *, ...);
 /* XXX: ugly */
 extern char nickname[];
 
+static ssize_t find_nl(char *);
+static ssize_t read_some(int, char *, size_t);
+
 int
 data_available(int fd, int direction, int timeout)
 {
@@ -71,6 +74,96 @@ data_available(int fd, int direction, int timeout)
     pollset[0].revents = 0;
 
     return poll(pollset, 1, timeout);
+}
+
+/* get a new-line-terminated line from fd */
+int
+fdgets(int fd, char *buf, int bufsize)
+{
+    static char intbuf[BUFSIZE+1];
+    static int intbuffill = 0;
+    int ret;
+    int len;
+
+    if (bufsize <= 0)
+	return 0;
+
+    buf[0] = '\0';
+
+    /* get remaining bytes, even if not a complete line */
+    if (fd == -1) {
+	if ((ret=intbuffill) >= bufsize)
+	    ret = bufsize - 1;
+
+	memcpy(buf, intbuf, ret);
+	buf[ret] = '\0';
+	intbuffill -= ret;
+	memmove(intbuf, intbuf+ret, intbuffill+1);
+
+	return ret;
+    }
+
+    while (((ret=find_nl(intbuf)) <= 0) && (intbuffill < bufsize)) {
+	switch (data_available(fd, DIRECTION_READ, CHAT_TIMEOUT)) {
+	case -1:
+	    return -1;
+	case 0:
+	    /* timeout */
+	    return -2;
+	default:
+	    break;
+	}
+	len = read_some(fd, intbuf+intbuffill, sizeof(intbuf)-intbuffill);
+	/* connection closed by remote */
+	if (len == 0)
+	    return 0;
+
+	intbuffill += len;
+	intbuf[intbuffill] = '\0';
+    }
+
+    /* no new-line found, but already more data available than
+     * fits in the output buffer; or line too long */
+    if ((ret <= 0) || (ret >= bufsize))
+	ret = bufsize - 1;
+
+    memcpy(buf, intbuf, ret);
+    buf[ret] = '\0';
+    intbuffill -= ret;
+    memmove(intbuf, intbuf+ret, intbuffill+1);
+
+    return ret;
+}
+
+/* return length of string up to and including first new-line character */
+static ssize_t
+find_nl(char *buf)
+{
+    char *p;
+    ssize_t ret;
+
+    ret = -1;
+    if ((p=strchr(buf, '\n')) != NULL) {
+	/* include the new-line character */
+	ret = p - buf + 1;
+    }
+
+    return ret;
+}
+
+/* read characters, NUL-terminate buffer */
+static ssize_t
+read_some(int fd, char *buf, size_t bufsize)
+{
+    ssize_t bytes_read;
+
+    if (bufsize <= 0)
+	return 0;
+	
+    if ((bytes_read=read(fd, buf, bufsize-1)) >= 0)
+	buf[bytes_read] = '\0';
+
+    return bytes_read;
 }
 
 int
