@@ -1,0 +1,106 @@
+.\" Converted with mdoc2man 0.2
+.\" from NiH: dccsend.mdoc,v 1.1 2003/04/07 12:11:48 wiz Exp 
+.\" $NiH: dccsend.mdoc,v 1.1 2003/04/07 12:11:48 wiz Exp $
+.\"
+.\" Copyright (c) 2003 Thomas Klausner.
+.\" All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above
+.\"    copyright notice, this list of conditions and the following
+.\"    disclaimer in the documentation and/or other materials provided
+.\"    with the distribution.
+.\" 3. The name of the author may not be used to endorse or promote
+.\"    products derived from this software without specific prior
+.\"    written permission.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THOMAS KLAUSNER ``AS IS'' AND ANY
+.\" EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+.\" PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE FOUNDATION OR
+.\" CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+.\" SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+.\" LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF
+.\" USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+.\" ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+.\" OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+.\" OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+.\" SUCH DAMAGE.
+.TH DCCSEND 1 "April 7, 2003" NiH
+.SH "NAME"
+dccsend \- send a file to a MIRC /dccserver
+.SH "SYNOPSIS"
+.B dccsend
+[\fB-hv\fR]
+[\fB-n\fR \fBnickname\fR]
+[\fB-p\fR \fBport\fR]
+[\fB-r\fR \fBremotenick\fR]
+\fBhost\fR
+\fBfilename\fR
+.SH "DESCRIPTION"
+.B dccsend
+sends a file to remote host running a MIRC /dccserver or
+dccserver(1).
+The
+\fBhost\fR
+argument specifies the name or IP of the server where
+dccserver(1)
+is running, and the
+\fBfilename\fR
+argument denotes the name of the local file to send to the remote host.
+You can get the hostname or IP of a fellow IRCer by doing
+``/whois remotenick'',
+the first line will probably contain
+``user@example.org''
+or
+``user@127.0.0.1''.
+.PP
+Supported options:
+.RS
+.TP 17
+\fB-h\fR
+Display a short help message.
+.TP 17
+\fB-n\fR \fBnickname\fR
+Set nickname used in handshake to
+\fBnickname.\fR
+Should be the same nickname that you use on IRC, otherwise some
+servers might complain and close the connection.
+Defaults to
+``dccsend''.
+.TP 17
+\fB-p\fR \fBport\fR
+Denote
+\fBport\fR
+on which the remote
+dccserver(1)
+is listening.
+Defaults to 59, since that is MIRC's default port.
+.TP 17
+\fB-r\fR \fBremotenick\fR
+Expected nickname on the remote side.
+.TP 17
+\fB-v\fR
+Display program name and version number.
+.RE
+.SH "EXAMPLES"
+Typical usage:
+.PP
+.Bd \-literal \-offset indent
+dccsend \-n yournick example.org /path/to/file
+.Ed
+.SH "AUTHORS"
+.B dccsend
+was written by
+Thomas Klausner <tk@giga.or.at.>
+.SH "BUGS"
+The
+\fB-r\fR
+argument is currently ignored.
+.PP
+There are no timeouts, just interrupt and try again.
+The protocol supports resuming automatically.
