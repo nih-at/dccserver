@@ -1,4 +1,15 @@
-2003-01-28  Thomas Klausner  <wiz@dmath5.geometrie.tuwien.ac.at>
+2003-03-29  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
+
+	* dccserver.mdoc: document -i option
+
+	* dccserver.c (main): add option (-i) to not filter out control
+	characters.
+	(converse_with_client): move display code to ...
+	(display_remote_line): new function, and honor option to display
+	control characters.
+	Idea for -i from Rudolf Polzer.
+
+2003-01-28  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
 
 	* dccserver.c (get_file): only warn if we really get more than
 	expected, not if we just get all the bytes.

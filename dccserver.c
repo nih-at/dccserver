@@ -1,4 +1,4 @@
-/* $NiH: dccserver.c,v 1.29 2003/01/23 10:26:48 wiz Exp $ */
+/* $NiH: dccserver.c,v 1.30 2003/01/28 22:05:08 wiz Exp $ */
 /*-
  * Copyright (c) 2002, 2003 Thomas Klausner.
  * All rights reserved.
@@ -76,11 +76,12 @@ void warnx(const char *, ...);
 typedef enum state_e { ST_NONE, ST_CHAT, ST_FSERVE, ST_SEND, ST_GET,
 		       ST_END } state_t;
 
-static const char *prg;
-static char nickname[1024];
 static char filename[1024];
 static long filesize;
+static int filter_control_chars;
+static char nickname[1024];
 static char partner[100];
+static const char *prg;
 
 volatile int sigchld = 0;
 
@@ -118,6 +119,7 @@ tell_client(FILE *fp, int retcode, char *fmt, ...)
     return;
 }
 
+/* get and save file from network */
 int
 get_file(FILE *fp)
 {
@@ -225,6 +227,66 @@ parse_get_line(char *line)
     return 0;
 }    
 
+/* display line given from remote; filter out some characters */
+/* assumes ASCII text */
+void
+display_remote_line(const unsigned char *p)
+{
+    printf("<%s> ", partner);
+    while (*p) {
+	if (*p > 0x7f) {
+	    putchar('.');
+	    p++;
+	    continue;
+	}
+	if (filter_control_chars) {
+	    switch (*p) {
+	    case 0x03:
+		/* skip control-C */
+		p++;
+		/*
+		 * syntax: ^CN[,M] -- 0<=N<=99, 0<=M<=99, N fg, M bg,
+		 *         or ^C to turn color off
+		 */
+		/* fg */
+		if ('0' <= *p && *p <= '9') {
+		    if ('0' <= p[1] && p[1] <= '9') {
+			p++;
+		    }
+		    p++;
+		    /* bg */
+		    if (*p == ',' && '0' <= p[1] && p[1] <='9') {
+			p+=2;
+			if ('0' <= *p && *p <= '9') {
+			    p++;
+			}
+		    }
+		}
+		continue;
+
+	    case 0x02:
+		/* bold */
+	    case 0x0f:
+		/* plain text */
+	    case 0x12:
+		/* reverse */
+	    case 0x15:
+		/* underlined */
+	    case 0x1f:
+		break;
+		
+	    default:
+		putchar(*p);
+		break;
+	    }
+	} else {
+	    putchar(*p);
+	}
+	p++;
+    }
+    putchar('\n');
+}
+
 /* signal handler */
 void
 sig_handle(int signal)
@@ -296,56 +358,7 @@ converse_with_client(FILE *fp, state_t state, char *line)
 	break;
 
     case ST_CHAT:
-	printf("<%s> ", partner);
-	p = (unsigned char *)line;
-	while (*p) {
-	    if (*p > 0x7f) {
-		putchar('.');
-		p++;
-		continue;
-	    }
-	    switch (*p) {
-	    case 0x03:
-		/* skip control-C */
-		p++;
-		/*
-		 * syntax: ^CN[,M] -- 0<=N<=99, 0<=M<=99, N fg, M bg,
-		 *         or ^C to turn color off
-		 */
-		/* fg */
-		if ('0' <= *p && *p <= '9') {
-		    if ('0' <= p[1] && p[1] <= '9') {
-			p++;
-		    }
-		    p++;
-		    /* bg */
-		    if (*p == ',' && '0' <= p[1] && p[1] <='9') {
-			p+=2;
-			if ('0' <= *p && *p <= '9') {
-			    p++;
-			}
-		    }
-		}
-		continue;
-
-	    case 0x02:
-		/* bold */
-	    case 0x0f:
-		/* plain text */
-	    case 0x12:
-		/* reverse */
-	    case 0x15:
-		/* underlined */
-	    case 0x1f:
-		break;
-		
-	    default:
-		putchar(*p);
-		break;
-	    }
-	    p++;
-	}
-	putchar('\n');
+	display_remote_line(line);
 	break;
 
     case ST_FSERVE:
@@ -497,6 +510,8 @@ main(int argc, char *argv[])
     struct pollfd pollset[2];
 
     strlcpy(nickname, "dccserver", sizeof(nickname));
+    /* default to filtering out control characters */
+    filter_control_chars = 1;
     port = 59;
     prg = argv[0];
 
@@ -514,10 +529,14 @@ main(int argc, char *argv[])
     else if (chdir("/") == -1)
 	warn("can't chdir to \"/\" in chroot");
 
-    while ((c=getopt(argc, argv, "hn:p:v")) != -1) {
+    while ((c=getopt(argc, argv, "hin:p:v")) != -1) {
 	switch(c) {
 	case 'h':
 	    usage();
+
+	case 'i':
+	    filter_control_chars = 0;
+	    break;
 
 	case 'v':
 	    puts(PACKAGE_STRING "\n");
