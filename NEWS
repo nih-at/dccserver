@@ -1,4 +1,8 @@
 0.4:
+
+	Add contrib/dccsend.pl from David Oftedal <david@start.no>
+	for xchat users.
+
 	Add "close" command; close particular connections.
 
 	Added proper timeout handling.
