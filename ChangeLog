@@ -1,3 +1,8 @@
+2003-05-06  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
+
+	* dccserver.c (sig_handle): rename variable to avoid shadowing.
+	(main): remove variable to avoid shadowing.
+
 2003-05-02  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
 
 	* configure.ac: 0.3a test release.

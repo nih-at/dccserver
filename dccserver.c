@@ -1,4 +1,4 @@
-/* $NiH: dccserver.c,v 1.50 2003/05/02 17:09:12 wiz Exp $ */
+/* $NiH: dccserver.c,v 1.51 2003/05/05 21:05:53 wiz Exp $ */
 /*-
  * Copyright (c) 2002, 2003 Thomas Klausner.
  * All rights reserved.
@@ -358,9 +358,9 @@ display_remote_line(int id, const unsigned char *p)
 
 /* signal handler */
 void
-sig_handle(int signal)
+sig_handle(int signo)
 {
-    switch(signal) {
+    switch(signo) {
     case SIGCHLD:
 	sigchld = 1;
 	break;
@@ -766,7 +766,6 @@ main(int argc, char *argv[])
 
 	/* clean up after dead children */
 	while (sigchld > 0) {
-	    int i;
 	    int status;
 	    pid_t deadpid;
 
