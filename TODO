@@ -3,3 +3,4 @@
 . make fserve work
 . make it easier to find out which child does what
 . timeouts
+. don't send data to 'Send' connections -- they quit in this case
