@@ -1,4 +1,4 @@
-/* $NiH: dccserver.c,v 1.20 2002/10/15 18:41:10 wiz Exp $ */
+/* $NiH: dccserver.c,v 1.21 2002/10/15 18:52:22 wiz Exp $ */
 /*-
  * Copyright (c) 2002 Thomas Klausner.
  * All rights reserved.
@@ -386,7 +386,7 @@ communicate_with_client(int sock)
 }
 
 /*
- * create child to handle connection and update structure trackig
+ * create child to handle connection and update structure tracking
  * children
  */
 void
