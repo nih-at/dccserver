@@ -1,4 +1,4 @@
-/* $NiH: dccserver.c,v 1.38 2003/04/04 12:52:36 wiz Exp $ */
+/* $NiH: dccserver.c,v 1.39 2003/04/05 00:04:48 wiz Exp $ */
 /*-
  * Copyright (c) 2002, 2003 Thomas Klausner.
  * All rights reserved.
@@ -501,15 +501,16 @@ usage(void)
 }
 
 /* handle input from user */
-void
+int
 handle_input(void)
 {
     char buf[8192];
     int child;
     char *end;
+    int ret;
 
     if (fgets(buf, sizeof(buf), stdin) == NULL)
-	return;
+	return -1;
 
     if (echo_input) {
 	fputs(buf, stdout);
@@ -521,13 +522,15 @@ handle_input(void)
 	&& end[1] == ' ') {
 	if (children[child].pid == -1) {
 	    warnx("child %d is dead", child);
-	    return;
+	    return 0;
 	}
 
 	write(children[child].sock, end+2, strlen(end+2));
     }
+    else if (strncmp(buf, "quit", 4) == 0)
+	return -1;
 
-    return;
+    return 0;
 }
 
 /*
@@ -686,7 +689,8 @@ main(int argc, char *argv[])
 	if (pollset[0].revents != 0) {
 	    /* some data from stdin */
 
-	    handle_input();
+	    if (handle_input() < 0)
+		break;
 	}
 	if (pollset[1].revents != 0) {
 	    /* some data from network */

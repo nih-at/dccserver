@@ -3,6 +3,11 @@
 	* dccserver.c (tell_client): add fflush; seems to help at least on
 	Solaris.
 
+	* dccserver.c (handle_input): return -1 if stdin closed, or user
+	entered "quit".
+	(main): exit if -1 returned by handle_input.
+	Idea from Rudolf Polzer.
+
 2003-04-04  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
 
 	* getaddrinfo.h: new file, from Dieter Baron.
