@@ -1,4 +1,4 @@
-/* $NiH: child.c,v 1.5 2003/05/11 00:16:36 wiz Exp $ */
+/* $NiH: child.c,v 1.6 2003/05/11 00:37:44 wiz Exp $ */
 /*-
  * Copyright (c) 2003 Thomas Klausner.
  * All rights reserved.
@@ -47,7 +47,7 @@ struct transfer_state {
     struct timeval lastdata;
 };
 
-char partner[100];
+static char partner[100];
 extern void display_remote_line(int, const unsigned char *);
 extern char *strip_path(char *);
 
@@ -64,9 +64,10 @@ extern char *strip_path(char *);
 #define DIRECTION_READ  1
 #define DIRECTION_WRITE 2
 
-/* timeout values, ms */
+/* timeout values (ms) */
 #define CHAT_TIMEOUT		 15000
 #define TRANSFER_TIMEOUT	120000
+#define STALL_TIMEOUT		  5000
 #define MIN_TIMEOUT		   300
 
 int
@@ -85,6 +86,94 @@ data_available(int fd, int direction, int timeout)
     return poll(pollset, 1, timeout);
 }
 
+
+/* return length of string up to and including first new-line character */
+ssize_t
+find_nl(char *buf)
+{
+    char *p;
+    ssize_t ret;
+
+    ret = -1;
+    if ((p=strchr(buf, '\n')) != NULL) {
+	/* include the new-line character */
+	ret = p - buf + 1;
+    }
+
+    return ret;
+}
+
+/* read characters, NUL-terminate buffer */
+ssize_t
+read_some(int fd, char *buf, size_t bufsize)
+{
+    ssize_t bytes_read;
+
+    if (bufsize <= 0)
+	return 0;
+	
+    if ((bytes_read=read(fd, buf, bufsize-1)) >= 0)
+	buf[bytes_read] = '\0';
+
+    return bytes_read;
+}
+
+/* get a new-line-terminated line from fd */
+int
+fdgets(int fd, char *buf, int bufsize)
+{
+    static char intbuf[BUFSIZE+1];
+    static int intbuffill = 0;
+    int ret;
+    int len;
+
+    if (bufsize <= 0)
+	return 0;
+
+    /* get remaining bytes, even if not a complete line */
+    if (fd == -1) {
+	if ((ret=intbuffill) >= bufsize)
+	    ret = bufsize - 1;
+
+	memcpy(buf, intbuf, ret);
+	buf[ret] = '\0';
+	intbuffill -= ret;
+	memmove(intbuf, intbuf+ret, intbuffill+1);
+
+	return ret;
+    }
+
+    while (((ret=find_nl(intbuf)) <= 0) && (intbuffill < bufsize)) {
+	switch (data_available(fd, DIRECTION_READ, CHAT_TIMEOUT)) {
+	case -1:
+	    return -1;
+	case 0:
+	    /* timeout */
+	    return -2;
+	default:
+	    break;
+	}
+	len = read_some(fd, intbuf+intbuffill, sizeof(intbuf)-intbuffill);
+	/* connection closed by remote */
+	if (len == 0)
+	    return 0;
+
+	intbuffill += len;
+	intbuf[intbuffill] = '\0';
+    }
+
+    /* no new-line found, but already more data available than
+     * fits in the output buffer; or line too long */
+    if ((ret <= 0) || (ret >= bufsize))
+	ret = bufsize - 1;
+
+    memcpy(buf, intbuf, ret);
+    buf[ret] = '\0';
+    intbuffill -= ret;
+    memmove(intbuf, intbuf+ret, intbuffill+1);
+
+    return ret;
+}
 
 /* some fserves incorrectly include the complete path -- */
 /* strip it off */
@@ -163,21 +252,7 @@ display_remote_line(int id, const unsigned char *p)
     fflush(stdout);
 }
 
-/* read some characters */
-ssize_t
-read_some(int fd, char *buf, size_t bufsize)
-{
-    ssize_t bytes_read;
-
-    if (bufsize <= 0)
-	return 0;
-	
-    if ((bytes_read=read(fd, buf, bufsize-1)) >= 0)
-	buf[bytes_read] = '\0';
-
-    return bytes_read;
-}
-
+/* write buf, don't accept partial writes */
 ssize_t
 write_complete(int fd, int timeout, char *buf)
 {
@@ -206,6 +281,7 @@ write_complete(int fd, int timeout, char *buf)
 
     return 1;
 }
+
 
 int
 tell_client(int fd, int retcode, char *fmt, ...)
@@ -261,6 +337,64 @@ parse_get_line(char *line, char **filename, long *filesize)
     return 0;
 }
 
+/* return difference between two timevals in ms */
+long
+timevaldiff(struct timeval *before, struct timeval *after)
+{
+    int sec, usec;
+
+    usec = after->tv_usec - before->tv_usec;
+    sec = after->tv_sec - before->tv_sec;
+    if (before->tv_usec > after->tv_usec) {
+	usec += 1000000;
+	sec--;
+    }
+
+    return (long)sec * 1000 + ((long)usec + 500)/1000;
+}
+
+/* display current transfer statistics */
+void
+display_transfer_statistics(struct transfer_state *ts, int id)
+{
+    double transfer_rate;
+    double size_percent;
+    long time_divisor;
+    long stalled;
+    struct timeval after;
+
+    gettimeofday(&after, NULL);
+
+    time_divisor = timevaldiff(&(ts->starttime), &after);
+    /* avoid division by zero in _very_ fast (or small) transfers */
+    if (time_divisor == 0)
+	time_divisor = 1;
+    transfer_rate = (((double)(ts->filesize-ts->rem-ts->offset))/1024*1000)/time_divisor;
+
+    if (ts->filesize > 0)
+	size_percent = ((double)(ts->filesize-ts->rem))/ts->filesize*100;
+    else
+	size_percent = 0.0;
+
+    warnx("child %d: %s sending `%s' (%ld of %ld bytes (%.1f%%), %ld new)",
+	  id, partner, ts->filename, ts->filesize - ts->rem, ts->filesize,
+	  size_percent, ts->filesize - ts->rem - ts->offset);
+    stalled = timevaldiff(&(ts->lastdata), &after);
+    if (stalled > STALL_TIMEOUT) {
+	warnx("child %d: time %ld.%lds (stalled for %ld.%lds), transfer rate %.1fKb/s",
+	      id, (time_divisor + 50)/1000, ((time_divisor + 50) / 100) % 10,
+	      (stalled + 50)/1000, ((stalled + 50) / 100) % 10, transfer_rate);
+    }
+    else {
+	warnx("child %d: time %ld.%ld seconds, transfer rate %.1fKb/s", id,
+	      (time_divisor + 50)/1000, ((time_divisor + 50) / 100) % 10, transfer_rate);
+    }
+
+    return;
+}
+
+/* determine how much of filename should be transferred, and
+ * intialise structure; tell remote side offset */
 struct transfer_state *
 setup_read_file(int fd, char *filename, long filesize)
 {
@@ -268,6 +402,8 @@ setup_read_file(int fd, char *filename, long filesize)
     struct transfer_state *ts;
     long offset;
     int out;
+    char buf[BUFSIZE];
+    int len;
 
     if (stat(filename, &sb) == 0) {
 	/* file exists */
@@ -339,24 +475,21 @@ setup_read_file(int fd, char *filename, long filesize)
     gettimeofday(&(ts->starttime), NULL);
     ts->lastdata = ts->starttime;
 
+    /* get any data that's in fdgets() buffer */
+    while ((len=fdgets(-1, buf, sizeof(buf))) > 0) {
+    	if (write(ts->outfd, buf, len) < len) {
+	    warn("`%s': write error", ts->filename);
+	    free(ts->filename);
+	    free(ts);
+	    return NULL;
+	}
+	ts->rem -= len;
+    }
+
     return ts;
 }
 
-long
-timevaldiff(struct timeval *before, struct timeval *after)
-{
-    int sec, usec;
-
-    usec = after->tv_usec - before->tv_usec;
-    sec = after->tv_sec - before->tv_sec;
-    if (before->tv_usec > after->tv_usec) {
-	usec += 1000000;
-	sec--;
-    }
-
-    return (long)sec * 1000 + ((long)usec + 500)/1000;
-}
-
+/* transfer data from remote, with timeout */
 int
 read_file(struct transfer_state *ts)
 {
@@ -381,15 +514,15 @@ read_file(struct transfer_state *ts)
 
     if ((len=read(ts->infd, buf, sizeof(buf))) > 0) {
 	if (write(ts->outfd, buf, len) < len) {
-	    warn("write error on `%s'", ts->filename);
+	    warn("`%s': write error", ts->filename);
 	    return -1;
 	}
 	ts->rem -= len;
 
 	if (ts->rem < 0 && ts->exceed_warning_shown == 0) {
 	    ts->exceed_warning_shown = 1;
-	    warnx("getting more than %ld bytes for `%s'",
-		  ts->filesize, ts->filename);
+	    warnx("`%s': getting more than the expected %ld bytes",
+		  ts->filename, ts->filesize);
 	}
 	gettimeofday(&(ts->lastdata), NULL);
     }
@@ -397,39 +530,13 @@ read_file(struct transfer_state *ts)
     return len;
 }
 
-void
-display_transfer_statistics(struct transfer_state *ts, int id)
-{
-    double transfer_rate;
-    double size_percent;
-    long time_divisor;
-    struct timeval after;
-
-    gettimeofday(&after, NULL);
-
-    time_divisor = timevaldiff(&(ts->starttime), &after);
-    /* avoid division by zero in _very_ fast (or small) transfers */
-    if (time_divisor == 0)
-	time_divisor = 1;
-    transfer_rate = (((double)(ts->filesize-ts->rem-ts->offset))/1024*1000)/time_divisor;
-
-    if (ts->filesize > 0)
-	size_percent = ((double)(ts->filesize-ts->rem))/ts->filesize*100;
-    else
-	size_percent = 0.0;
-
-    warnx("child %d: %s sending `%s' (%ld of %ld bytes (%.1f%%), %ld new)",
-	  id, partner, ts->filename, ts->filesize - ts->rem, ts->filesize,
-	  size_percent, ts->filesize - ts->rem - ts->offset);
-    warnx("child %d: time %ld.%ld seconds, transfer rate %.1fKb/s", id,
-	  time_divisor/1000, ((time_divisor + 50) / 100) % 10, transfer_rate);
-
-    return;
-}
-
+/* display transfer statistic, close connection, and free data structure */
 int
 cleanup_read_file(struct transfer_state *ts, int id)
 {
+    int ret;
+
+    ret = -1;
 
     display_transfer_statistics(ts, id);
 
@@ -438,69 +545,14 @@ cleanup_read_file(struct transfer_state *ts, int id)
 
     if (ts->rem <= 0) {
 	warnx("child %d: transfer complete", id);
-	return 0;
+	ret = 0;
     }
+
+    free(ts->filename);
+    free(ts);
 
     return -1;
 
-}
-
-/* return length of string up to and including first new-line character */
-ssize_t
-find_nl(char *buf)
-{
-    char *p;
-    ssize_t ret;
-
-    ret = -1;
-    if ((p=strchr(buf, '\n')) != NULL) {
-	/* include the new-line character */
-	ret = p - buf + 1;
-    }
-
-    return ret;
-}
-
-int
-fdgets(int fd, char *buf, int bufsize)
-{
-    static char intbuf[BUFSIZE+1];
-    static int intbuffill = 0;
-    int ret;
-    int len;
-
-    if (bufsize <= 0)
-	return 0;
-
-    while (((ret=find_nl(intbuf)) <= 0) && (intbuffill < bufsize)) {
-	switch (data_available(fd, DIRECTION_READ, CHAT_TIMEOUT)) {
-	case -1:
-	    return -1;
-	case 0:
-	    /* timeout */
-	    return -2;
-	default:
-	    break;
-	}
-	len = read_some(fd, intbuf+intbuffill, sizeof(intbuf)-intbuffill);
-	/* connection closed by remote */
-	if (len == 0)
-	    return 0;
-
-	intbuffill += len;
-	intbuf[intbuffill] = '\0';
-    }
-
-    /* no new-line found, but already more data available than
-     * fits in the output buffer; or line too long */
-    if ((ret <= 0) || (ret >= bufsize))
-	ret = bufsize - 1;
-
-    memcpy(buf, intbuf, ret);
-    buf[ret] = '\0';
-    memmove(intbuf, intbuf+ret, intbuffill-ret+1);
-
-    return ret;
 }
 
 /* parse line from client, update state machine, and reply */
@@ -601,7 +653,7 @@ get_line_from_client(int sock, int id, state_t state, void **arg)
     len = fdgets(sock, line, sizeof(line));
     switch (len) {
     case -2:
-	warnx("timeout after %d seconds -- closing connection", CHAT_TIMEOUT/1000);
+	warnx("timeout after %ds -- closing connection", CHAT_TIMEOUT/1000);
 	ret = ST_END;
 	break;
     case -1:
@@ -649,7 +701,8 @@ child_loop(int sock, int id)
 		if (ret == -1 && errno == EINTR)
 		    continue;
 		else if (ret == -2)
-		    warnx("child %d: %s transfer timed out", id, partner);
+		    warnx("child %d: %s transfer timed out after %ds", id, partner,
+			  TRANSFER_TIMEOUT/1000);
 		cleanup_read_file((struct transfer_state *)arg, id);
 		state = ST_END;
 	    }
