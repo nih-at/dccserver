@@ -3,7 +3,7 @@ man_MANS=dccserver.1 dccsend.1
 
 LDADD=@LIBOBJS@
 
-dccserver_SOURCES=dccserver.c io.c
+dccserver_SOURCES=dccserver.c child.c
 dccsend_SOURCES=dccsend.c
 
 DISTCLEANFILES=	dccserver.1 dccsend.1
