@@ -1,5 +1,7 @@
 2003-01-22  Thomas Klausner  <wiz@dmath5.geometrie.tuwien.ac.at>
 
+	* configure.ac: use autoconf 2.57.
+
 	* Makefile.am (install-exec-hook): allow installation to succeed
 	if chown/chmod for installing dccserver setuid root fail.
 
