@@ -2,6 +2,8 @@
 
 	* configure.ac: 0.3a test release.
 
+	* dccserver.c: warn if neither poll.h nor sys/poll.h are found.
+
 	* configure.ac: one of poll.h and sys/poll.h is enough; break if
 	poll.h is found.
 
