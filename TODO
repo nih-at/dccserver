@@ -1,11 +1,5 @@
 Planned changes
-. don't send data to 'Send' connections -- they quit in this case
 . add option to create per-remote download dirs
-. regression tests
-. make configure.ac/Makefile.am smarter -- not both programs need
-  all replacement functions or -lpoll
-. warn in autoconf if poll and sys/poll.h are not found, not in
-  dccserver.c.
 . split source up in more files to make it easier to find something
 
 Possible changes
@@ -14,8 +8,9 @@ Possible changes
 . bind to specific IP only
 . disallow particular clients
 . readline
-. include poll-emulation
 . remove stalled time from average speed calculation
+. don't send data to 'Send' connections -- they quit in this case
+. regression tests
 
 dccsend:
 . verify remote nickname
