@@ -1,4 +1,4 @@
-/* $NiH: child.c,v 1.13 2003/05/13 13:40:28 wiz Exp $ */
+/* $NiH: child.c,v 1.14 2003/05/14 09:06:01 wiz Exp $ */
 /*-
  * Copyright (c) 2003 Thomas Klausner.
  * All rights reserved.
@@ -60,12 +60,6 @@ static char partner[100];
 
 /* maximum number of errors before connection gets closed */
 #define MAX_ERRORS   3
-
-/* timeout values (ms) */
-#define CHAT_TIMEOUT		 15000
-#define TRANSFER_TIMEOUT	120000
-#define STALL_TIMEOUT		  5000
-#define MIN_TIMEOUT		   300
 
 /* return length of string up to and including first new-line character */
 ssize_t
@@ -217,62 +211,6 @@ display_remote_line(int id, const char *p)
     fflush(stdout);
 }
 
-/* write buf, don't accept partial writes */
-ssize_t
-write_complete(int fd, int timeout, char *buf)
-{
-    int len, written;
-
-    len = strlen(buf);
-    while (len > 0) {
-	switch (data_available(fd, DIRECTION_WRITE, timeout)) {
-	case -1:
-	    /* ignore interrupts here */
-	    if (errno == EINTR)
-		continue;
-	    return -1;
-	case 0:
-	    /* timeout */
-	    return -2;
-	default:
-	    break;
-	}
-	if ((written=write(fd, buf, len)) <= 0)
-	    return written;
-
-	buf += written;
-	len -= written;
-    }
-
-    return 1;
-}
-
-
-int
-tell_client(int fd, int retcode, char *fmt, ...)
-{
-    char buf[BUFSIZE];
-    int offset;
-    va_list ap;
-
-    /* nickname can't be that long */
-    offset = snprintf(buf, sizeof(buf), "%03d %s", retcode, nickname);
-
-    if (fmt != NULL) {
-	buf[offset++] = ' ';
-	va_start(ap, fmt);
-	offset += vsnprintf(buf+offset, sizeof(buf)-offset, fmt, ap);
-	va_end(ap);
-    }
-    if (offset > sizeof(buf) - 2) {
-	warnx("line too long to send -- aborted");
-	return -1;
-    }
-    buf[offset++] = '\n';
-    buf[offset++] = '\0';
-
-    return write_complete(fd, CHAT_TIMEOUT, buf);
-}
 
 /* parse GET line given by remote client */
 int

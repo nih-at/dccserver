@@ -1,4 +1,4 @@
-/* $NiH$ */
+/* $NiH: io.h,v 1.1 2003/05/14 09:06:01 wiz Exp $ */
 /*-
  * Copyright (c) 2003 Thomas Klausner.
  * All rights reserved.
@@ -33,10 +33,21 @@
 #ifndef _HAD_IO_H
 #define _HAD_IO_H
 
+#include <unistd.h>
+
 /* test for read/write possibility */
 #define DIRECTION_READ  1
 #define DIRECTION_WRITE 2
 
+/* timeout values (ms) */
+#define CHAT_TIMEOUT		 15000
+#define TRANSFER_TIMEOUT	120000
+#define STALL_TIMEOUT		  5000
+#define MIN_TIMEOUT		   300
+
+
 int data_available(int, int, int);
+int tell_client(int, int, char *, ...);
+ssize_t write_complete(int, int, char *);
 
 #endif _HAD_IO_H

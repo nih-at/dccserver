@@ -1,5 +1,10 @@
 2003-05-14  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
 
+	* child.c (tell_client): move from here...
+	* lib/io.c (tell_client): ... to here.
+	* child.c (write_complete): move from here...
+	* lib/io.c (write_complete): ... to here.
+
 	* Makefile.am (AM_CPPFLAGS): look for header files in lib/.
 
 	* lib/Makefile.am (libcompat_a_SOURCES): add io.c and util.c.

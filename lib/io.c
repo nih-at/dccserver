@@ -1,4 +1,4 @@
-/* $NiH$ */
+/* $NiH: io.c,v 1.1 2003/05/14 09:06:01 wiz Exp $ */
 /*-
  * Copyright (c) 2003 Thomas Klausner.
  * All rights reserved.
@@ -33,6 +33,10 @@
 #include "config.h"
 #include "io.h"
 
+#ifdef HAVE_ERR_H
+#include <err.h>
+#endif
+#include <errno.h>
 #ifdef HAVE_POLL_H
 #include <poll.h>
 #elif HAVE_SYS_POLL_H
@@ -40,6 +44,18 @@
 #else
 #include "poll.h"
 #endif /* HAVE_POLL_H || HAVE_SYS_POLL_H */
+#include <stdarg.h>
+#include <stdio.h>
+#include <string.h>
+
+#ifndef HAVE_WARNX
+void warnx(const char *, ...);
+#endif
+
+#define BUFSIZE 8192
+
+/* XXX: ugly */
+extern char nickname[];
 
 int
 data_available(int fd, int direction, int timeout)
@@ -57,3 +73,59 @@ data_available(int fd, int direction, int timeout)
     return poll(pollset, 1, timeout);
 }
 
+int
+tell_client(int fd, int retcode, char *fmt, ...)
+{
+    char buf[BUFSIZE];
+    int offset;
+    va_list ap;
+
+    /* nickname can't be that long */
+    offset = snprintf(buf, sizeof(buf), "%03d %s", retcode, nickname);
+
+    if (fmt != NULL) {
+	buf[offset++] = ' ';
+	va_start(ap, fmt);
+	offset += vsnprintf(buf+offset, sizeof(buf)-offset, fmt, ap);
+	va_end(ap);
+    }
+    if (offset > sizeof(buf) - 2) {
+	warnx("line too long to send -- aborted");
+	return -1;
+    }
+    buf[offset++] = '\n';
+    buf[offset++] = '\0';
+
+    return write_complete(fd, CHAT_TIMEOUT, buf);
+}
+
+
+/* write buf, don't accept partial writes */
+ssize_t
+write_complete(int fd, int timeout, char *buf)
+{
+    int len, written;
+
+    len = strlen(buf);
+    while (len > 0) {
+	switch (data_available(fd, DIRECTION_WRITE, timeout)) {
+	case -1:
+	    /* ignore interrupts here */
+	    if (errno == EINTR)
+		continue;
+	    return -1;
+	case 0:
+	    /* timeout */
+	    return -2;
+	default:
+	    break;
+	}
+	if ((written=write(fd, buf, len)) <= 0)
+	    return written;
+
+	buf += written;
+	len -= written;
+    }
+
+    return 1;
+}
