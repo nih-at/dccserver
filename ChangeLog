@@ -1,3 +1,8 @@
+2003-01-28  Thomas Klausner  <wiz@dmath5.geometrie.tuwien.ac.at>
+
+	* dccserver.mdoc: remove a superfluous word.
+	* dccserver.man: regen.
+
 2003-01-23  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
 
 	* dccserver.c (communicate_with_client): remove unused variable.
