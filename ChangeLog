@@ -1,5 +1,8 @@
 2003-08-04  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
 
+	* contrib/dccsend.pl: Add script from David Oftedal for xchat
+	using dccsend instead of /dcc send for firewall protected hosts.
+
 	* dccsend.c: add prototypes.
 
 	* config.guess, config.sub, depcomp, install-sh: update

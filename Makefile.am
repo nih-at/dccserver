@@ -13,6 +13,7 @@ DISTCLEANFILES=	dccserver.1 dccsend.1
 
 EXTRA_DIST=	dccserver.man dccserver.mdoc \
 		dccsend.man dccsend.mdoc \
+		contrib/dccsend.pl \
 		debian/changelog debian/control debian/copyright debian/dirs \
 		debian/docs debian/rules
 
