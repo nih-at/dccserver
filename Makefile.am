@@ -2,10 +2,10 @@ bin_PROGRAMS=dccserver dccsend
 man_MANS=dccserver.1 dccsend.1
 
 LDADD=		lib/libcompat.a
+AM_CPPFLAGS=	-Ilib
 
 dccserver_SOURCES=dccserver.c child.c
 dccsend_SOURCES=dccsend.c
-dccsend_CPPFLAGS=-Ilib $(AM_CPPFLAGS)
 
 noinst_HEADERS=	dccserver.h
 

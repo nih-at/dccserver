@@ -1,4 +1,4 @@
-/* $NiH: child.c,v 1.12 2003/05/12 18:44:03 wiz Exp $ */
+/* $NiH: child.c,v 1.13 2003/05/13 13:40:28 wiz Exp $ */
 /*-
  * Copyright (c) 2003 Thomas Klausner.
  * All rights reserved.
@@ -35,6 +35,9 @@
 #include <sys/stat.h>
 #include <sys/time.h>
 
+#include "io.h"
+#include "util.h"
+
 struct transfer_state {
     char *filename;
     int infd;
@@ -58,32 +61,11 @@ static char partner[100];
 /* maximum number of errors before connection gets closed */
 #define MAX_ERRORS   3
 
-/* test for read/write possibility */
-#define DIRECTION_READ  1
-#define DIRECTION_WRITE 2
-
 /* timeout values (ms) */
 #define CHAT_TIMEOUT		 15000
 #define TRANSFER_TIMEOUT	120000
 #define STALL_TIMEOUT		  5000
 #define MIN_TIMEOUT		   300
-
-int
-data_available(int fd, int direction, int timeout)
-{
-    struct pollfd pollset[1];
-
-    pollset[0].fd = fd;
-    pollset[0].events = 0;
-    if (direction & DIRECTION_READ)
-	pollset[0].events |= POLLIN|POLLPRI;
-    if (direction & DIRECTION_WRITE)
-	pollset[0].events |= POLLOUT;
-    pollset[0].revents = 0;
-
-    return poll(pollset, 1, timeout);
-}
-
 
 /* return length of string up to and including first new-line character */
 ssize_t
@@ -174,22 +156,6 @@ fdgets(int fd, char *buf, int bufsize)
 
     return ret;
 }
-
-/* some fserves incorrectly include the complete path -- */
-/* strip it off */
-char *
-strip_path(char *p)
-{
-    char *q;
-
-    if ((q=strrchr(p, '/')) != NULL)
-	p = ++q;
-    if ((q=strrchr(p, '\\')) != NULL)
-	p = ++q;
-
-    return p;
-}
-
 
 /* display line given from remote; filter out some characters */
 /* assumes ASCII text */

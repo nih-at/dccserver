@@ -1,3 +1,17 @@
+2003-05-14  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
+
+	* Makefile.am (AM_CPPFLAGS): look for header files in lib/.
+
+	* lib/Makefile.am (libcompat_a_SOURCES): add io.c and util.c.
+
+	* child.c (strip_path): move from here...
+	* lib/util.c: ... to here.
+	* lib/util.h: new file.
+
+	* child.c (data_available): move from here...
+	* lib/io.c: ... to here.
+	* lib/io.h: new file.
+
 2003-05-13  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
 
 	* lib/getaddrinfo.c (getaddrinfo): use unsigned short instead of
