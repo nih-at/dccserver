@@ -1,3 +1,11 @@
+2003-10-26  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
+
+	* child.c (read_file): close connection when exactly the expected
+	number of bytes has been received.
+
+	* dccsend.c (main_loop): report errors when closing network
+	connection.
+
 2003-08-04  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
 
 	* contrib/dccsend.pl: Add script from David Oftedal for xchat

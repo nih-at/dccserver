@@ -1,4 +1,4 @@
-/* $NiH: dccsend.c,v 1.17 2003/05/25 00:40:00 wiz Exp $ */
+/* $NiH: dccsend.c,v 1.18 2003/08/04 17:05:55 wiz Exp $ */
 /*-
  * Copyright (c) 2003 Thomas Klausner.
  * All rights reserved.
@@ -244,7 +244,9 @@ main_loop(int sock, char *filename, size_t filesize)
 	}
     }
 
-    (void)close(sock);
+    if (close(sock) != 0)
+	warn("error closing network socket");
+
     return;
 }
 

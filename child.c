@@ -1,4 +1,4 @@
-/* $NiH: child.c,v 1.18 2003/05/14 13:05:58 wiz Exp $ */
+/* $NiH: child.c,v 1.19 2003/05/24 23:53:49 wiz Exp $ */
 /*-
  * Copyright (c) 2003 Thomas Klausner.
  * All rights reserved.
@@ -331,7 +331,9 @@ read_file(struct transfer_state *ts)
 	}
 	ts->rem -= len;
 
-	if (ts->rem < 0 && ts->exceed_warning_shown == 0) {
+	if (ts->rem == 0)
+	    len = 0;
+	else if (ts->rem < 0 && ts->exceed_warning_shown == 0) {
 	    ts->exceed_warning_shown = 1;
 	    warnx("`%s': getting more than the expected %ld bytes",
 		  ts->filename, ts->filesize);
