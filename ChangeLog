@@ -1,7 +1,12 @@
 2003-05-14  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
 
+	* child.c (get_line_from_client): restructure a bit for
+	easier generalisation.
+	(child_loop): adapt.
+
 	* dccserver.h: only have minimal includes here.
 	* child.c: add includes.
+
 	* dccserver.c: add includes.
 
 	* child.c (fdgets, findnl, read_some, tell_client, write_complete): move from here...

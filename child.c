@@ -1,4 +1,4 @@
-/* $NiH: child.c,v 1.15 2003/05/14 09:21:02 wiz Exp $ */
+/* $NiH: child.c,v 1.16 2003/05/14 09:45:10 wiz Exp $ */
 /*-
  * Copyright (c) 2003 Thomas Klausner.
  * All rights reserved.
@@ -52,14 +52,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-
-#ifndef HAVE_ERR
-void err(int, const char *, ...);
-#endif
-
-#ifndef HAVE_ERRX
-void errx(int, const char *, ...);
-#endif
 
 #ifndef HAVE_STRLCPY
 size_t strlcpy(char *, const char *, size_t);
@@ -408,7 +400,7 @@ cleanup_read_file(struct transfer_state *ts, int id)
 
 /* parse line from client, update state machine, and reply */
 state_t
-parse_client_reply(int fd, int id, state_t state, char *line, void **arg)
+parse_client_reply(int fd, int id, state_t state, char *line, struct transfer_state **arg)
 {
     state_t ret;
 
@@ -490,39 +482,33 @@ parse_client_reply(int fd, int id, state_t state, char *line, void **arg)
     return ret;
 }
 
-state_t
-get_line_from_client(int sock, int id, state_t state, void **arg)
+int
+get_line_from_client(int sock, int id, char *line, int linelen)
 {
-    char line[BUFSIZE];
     int errcount;
-    int len;
-    state_t ret;
+    int ret;
 
     errcount = 0;
-    ret = state;
 
     /* get new-line terminated line from client */
-    len = fdgets(sock, line, sizeof(line));
-    switch (len) {
+    ret = fdgets(sock, line, linelen);
+    switch (ret) {
     case -2:
 	warnx("timeout after %ds -- closing connection", CHAT_TIMEOUT/1000);
-	ret = ST_END;
 	break;
     case -1:
 	if (errno != EINTR && ++errcount > MAX_ERRORS) {
 	    warnx("child %d: %s: %d errors in a row -- closing connection", id,
 		  partner, MAX_ERRORS);
-	    ret = ST_END;
 	}
 	break;
     default:
 	if (strtok(line, "\n\r") == NULL) {
 	    warn("client sent too long line");
 	    tell_client(sock, 151, NULL);
-	    ret = ST_END;
+	    ret = -1;
 	    break;
 	}
-	ret = parse_client_reply(sock, id, state, line, arg);
 	break;
     }
 
@@ -534,7 +520,7 @@ child_loop(int sock, int id)
 {
     char line[BUFSIZE];
     state_t state;
-    void *arg;
+    struct transfer_state *ts;
     int ret;
 
     state = ST_NONE;
@@ -542,28 +528,31 @@ child_loop(int sock, int id)
     while (state != ST_END) {
 	if (sigint) {
 	    if (state == ST_GETFILE)
-		display_transfer_statistics((struct transfer_state *)arg, id);
+		display_transfer_statistics(ts, id);
 	    warnx("child %d: SIGINT caught -- exiting", id);
 	    break;
 	}
 
 	switch (state) {
 	case ST_NONE:
-	    state = get_line_from_client(sock, id, state, &arg);
+	    if (get_line_from_client(sock, id, line, sizeof(line)) < 0)
+		state = ST_END;
+	    else
+		state = parse_client_reply(sock, id, state, line, &ts);
 	    break;
 
 	case ST_GETFILE:
 	    if (siginfo) {
 		siginfo = 0;
-		display_transfer_statistics((struct transfer_state *)arg, id);
+		display_transfer_statistics(ts, id);
 	    }
-	    if ((ret=read_file((struct transfer_state *)arg)) <= 0) {
+	    if ((ret=read_file(ts)) <= 0) {
 		if (ret == -1 && errno == EINTR)
 		    continue;
 		else if (ret == -2)
 		    warnx("child %d: %s transfer timed out after %ds", id, partner,
 			  TRANSFER_TIMEOUT/1000);
-		cleanup_read_file((struct transfer_state *)arg, id);
+		cleanup_read_file(ts, id);
 		state = ST_END;
 	    }
 	    break;
