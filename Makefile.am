@@ -1,10 +1,11 @@
 bin_PROGRAMS=dccserver dccsend
 man_MANS=dccserver.1 dccsend.1
 
-LDADD=@LIBOBJS@
+LDADD=		lib/libcompat.a
 
 dccserver_SOURCES=dccserver.c child.c
 dccsend_SOURCES=dccsend.c
+dccsend_CPPFLAGS=-Ilib $(AM_CPPFLAGS)
 
 noinst_HEADERS=	dccserver.h
 
@@ -14,10 +15,11 @@ EXTRA_DIST=	dccserver.man dccserver.mdoc \
 		dccsend.man dccsend.mdoc \
 		README.Darwin \
 		debian/changelog debian/control debian/copyright debian/dirs \
-		debian/docs debian/rules \
-		err.c errx.c getaddrinfo.c getaddrinfo.h strlcpy.c warn.c warnx.c
+		debian/docs debian/rules
 
 AUTOMAKE_OPTIONS=	dist-bzip2
+
+SUBDIRS=	lib
 
 install-exec-hook:
 	@(chown root $(bindir)/dccserver && \
