@@ -8,6 +8,8 @@ dccserver_SOURCES=dccserver.c
 DISTCLEANFILES=	dccserver.1
 
 EXTRA_DIST=	dccserver.man dccserver.mdoc README \
+		debian/changelog debian/control debian/copyright debian/dirs \
+		debian/docs debian/rules \
 		err.c snprintf.c strlcpy.c warn.c warnx.c
 
 AUTOMAKE_OPTIONS=	dist-bzip2
