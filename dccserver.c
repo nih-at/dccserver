@@ -1,4 +1,4 @@
-/* $NiH: dccserver.c,v 1.25 2003/01/22 15:19:17 wiz Exp $ */
+/* $NiH: dccserver.c,v 1.26 2003/01/22 15:42:43 wiz Exp $ */
 /*-
  * Copyright (c) 2002, 2003 Thomas Klausner.
  * All rights reserved.
@@ -500,6 +500,8 @@ main(int argc, char *argv[])
 	}
 	warn("can't chroot");
     }
+    else if (chdir("/") == -1)
+	warn("can't chdir to \"/\" in chroot");
 
     while ((c=getopt(argc, argv, "hn:p:v")) != -1) {
 	switch(c) {

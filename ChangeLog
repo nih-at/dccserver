@@ -3,6 +3,7 @@
 	* dccserver.c: allow receiving more than expected number of
 	bytes, but show a warning. From Per von Zweigbergk
 	<pvz@e.kth.se>.
+	(main): chdir to "/" in chroot.
 
 	* configure.ac: use autoconf 2.57.
 
