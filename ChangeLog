@@ -1,5 +1,9 @@
 2003-04-05  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
 
+	* dccserver.mdoc: remove a paragraph from BUGS that's no longer
+	true. Noted by Rudolf Polzer.
+	* dccserver.man: regen.
+
 	* dccsend.c (send_file): fix fseek return value check.
 
 	* dccserver.c (get_file): don't append to file, but seek to offset
