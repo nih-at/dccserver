@@ -42,8 +42,8 @@ IRC::print("Sending $file to $nick using the dccsend program. Make sure the user
 system("dccsend -n $mynick $targetip $file");
 
 #Hinder X-Chat from handling the command... Not that it works
-return XCHAT_EAT_XCHAT;
+return Xchat::EAT_XCHAT;
 }
 
-return XCHAT_EAT_NONE;
+return Xchat::EAT_NONE;
 }
