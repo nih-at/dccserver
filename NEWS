@@ -8,7 +8,7 @@
 	and chroot to current directory. Based on patches by
 	Per von Zweigbergk <pvz@e.kth.se>.
 
-	Debian package support, provided by Aubin Paul <aubin@punknews.org>.
+	Debian package support, provided by Aubin Paul <debian@outlyer.org>.
 
 0.1:
 	First public release.
