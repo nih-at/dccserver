@@ -1,11 +1,16 @@
-/* $NiH: dccserver.c,v 1.2 2002/10/12 20:13:26 wiz Exp $ */
+/* $NiH: dccserver.c,v 1.3 2002/10/13 21:35:13 wiz Exp $ */
 #include <sys/socket.h>
+#include <sys/wait.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <err.h>
 #include <errno.h>
+#include <fcntl.h>
+#include <signal.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 
 #define PROGRAM "dccserver"
@@ -13,7 +18,183 @@
 
 #define BACKLOG 10
 
+typedef enum state_e { ST_NONE, ST_CHAT, ST_FSERVE, ST_SEND, ST_GET,
+		       ST_END } state_t;
+
 static const char *prg;
+static char nickname[1024];
+
+volatile int sigchld = 0;
+volatile int sigint = 0;
+
+void
+say(char *line, FILE *fp)
+{
+    fwrite(line, strlen(line), 1, fp);
+    return;
+}
+
+void
+tell_client(FILE *fp, int retcode, const char *fmt, ...)
+{
+    va_list ap;
+
+    fprintf(fp, "%03d %s", retcode, nickname);
+    if (fmt != NULL) {
+	fprintf(fp, " ");
+	va_start(ap, fmt);
+	vfprintf(fp, fmt, ap);
+	va_end(ap);
+    }
+    fprintf(fp, "\n");
+
+    return;
+}
+
+void
+sig_handle(int signal)
+{
+    switch(signal) {
+    case SIGCHLD:
+	sigchld++;
+	break;
+    case SIGINT:
+	sigint++;
+	break;
+    default:
+	break;
+    }
+
+    return;
+}
+
+state_t
+converse_with_client(FILE *fp, state_t state, char *line)
+{
+    static char partner[100];
+    state_t ret;
+    char *p;
+
+    switch(state) {
+    case ST_NONE:
+	if (strncmp("100 ", line, 4) == 0) {
+	    tell_client(fp, 101, NULL);
+	    ret = ST_CHAT;
+	    /* XXX */
+	    say("I don't feel like chatting right now.\n", fp);
+	    ret = ST_END;
+	}
+	else if (strncmp("110 ", line, 4) == 0) {
+	    tell_client(fp, 111, NULL);
+	    ret = ST_FSERVE;
+	    /* XXX */
+	    say("I don't feel like fserving right now.\n", fp);
+	    ret = ST_END;
+	}
+	else if (strncmp("120 ", line, 4) == 0) {
+	    tell_client(fp, 121, NULL);
+	    ret = ST_SEND;
+	    /* XXX */
+	    say("I don't feel like getting files right now.\n", fp);
+	    ret = ST_END;
+	}
+	else if (strncmp("130 ", line, 4) == 0) {
+	    tell_client(fp, 131, NULL);
+	    ret = ST_GET;
+	    /* XXX */
+	    say("I don't feel like sending files right now.\n", fp);
+	    ret = ST_END;
+	}
+	else {
+	    tell_client(fp, 151, "invalid command");
+	    ret = ST_END;
+	    break;
+	}
+	strlcpy(partner, line+4, sizeof(partner));
+	if ((p=strchr(partner, ' ')) != NULL) {
+	    *p = '\0';
+	}
+
+	break;
+
+    case ST_CHAT:
+    case ST_FSERVE:
+    case ST_SEND:
+    case ST_GET:
+    case ST_END:
+    default:
+	    tell_client(fp, 151, "not supported");
+	    ret = ST_END;
+    }
+
+    return ret;
+}
+
+void
+do_child(int sock)
+{
+    FILE *fp;
+    char *buf, *lbuf;
+    size_t len;
+    state_t state;
+
+    state = ST_NONE;
+
+    if ((fp=fdopen(sock, "r+")) == NULL) {
+	(void)close(sock);
+	err(1, "[child] can't fdopen");
+    }
+
+    lbuf = NULL;
+    while ((state != ST_END) && (buf=fgetln(fp, &len)) != NULL) {
+	if (buf[len - 1] == '\n')
+	    buf[len - 1] = '\0';
+	else {
+	    if ((lbuf=(char *)malloc(len + 1)) == NULL)
+		err(1, "malloc");
+	    memcpy(lbuf, buf, len);
+	    lbuf[len] = '\0';
+	    buf = lbuf;
+	}
+
+	state = converse_with_client(fp, state, buf);
+
+	/* ATTENTION: buf overwritten during next f* function */
+	/* fwrite("Hello!\n", 7, 1, fp); */
+
+	if (lbuf != NULL) {
+	    free(lbuf);
+	    lbuf = NULL;
+	}
+    }
+
+    fclose(fp);
+    exit(0);
+}
+
+
+void
+handle_connection(int sock)
+{
+    pid_t child;
+
+    switch(child=fork()) {
+    case 0:
+	do_child(sock);
+	/* UNREACHABLE */
+	_exit(1);
+
+    case -1:
+	warn("fork error");
+	break;
+	
+    default:
+	break;
+    }
+
+    close(sock);
+    return;
+}
 
 void
 usage(void)
@@ -32,19 +213,16 @@ int
 main(int argc, char *argv[])
 {
     char *endptr;
-    char nickname[1024];
     int sock, sock_opt;
     int c;
     long port;
-#ifdef IPV6
-    struct sockaddr_in6 laddr;
-#else
     struct sockaddr_in laddr;
-#endif
 
     snprintf(nickname, sizeof(nickname), "dccserver");
     port = 59;
     prg = argv[0];
+
+    signal(SIGCHLD, sig_handle);
 
     while ((c=getopt(argc, argv, "hn:p:v")) != -1) {
 	switch(c) {
@@ -72,13 +250,13 @@ main(int argc, char *argv[])
 	}
     }
 
-#ifdef IPV6
-    if ((sock=socket(AF_INET6, SOCK_STREAM, 0)) == -1)
-	err(1, "can't open socket");
-#else
     if ((sock=socket(AF_INET, SOCK_STREAM, 0)) == -1)
 	err(1, "can't open socket");
-#endif
+
+    if (fcntl(sock, F_SETFD, FD_CLOEXEC) == -1) {
+	(void)close(sock);
+	err(1, "can't set socket close-on-exec");
+    }
 
     /* Tell system that local addresses can be reused. */
     sock_opt = 1;
@@ -89,15 +267,9 @@ main(int argc, char *argv[])
     }
 
     memset(&laddr, '\0', sizeof(laddr));
-#ifdef IPV6
-    laddr.sin6_family = AF_INET6;
-    laddr.sin6_port = htons(port);
-    laddr.sin6_addr = in6addr_any;
-#else
     laddr.sin_family = AF_INET;
     laddr.sin_port = htons(port);
     laddr.sin_addr.s_addr = htonl(INADDR_ANY);
-#endif
 
     if (bind(sock, (struct sockaddr *)&laddr, sizeof(laddr)) == -1) {
 	(void)close(sock);
@@ -108,14 +280,16 @@ main(int argc, char *argv[])
 	err(1, "can't listen on socket");
 
     while (1) {
-#ifdef IPV6
-	struct sockaddr_in6 raddr;
-	char addrbuf[INET6_ADDRSTRLEN];
-#else
 	struct sockaddr_in raddr;
-#endif
 	socklen_t raddrlen;
 	int new_sock;
+
+	while (sigchld > 0) {
+	    int status;
+
+	    sigchld--;
+	    wait(&status);
+	}
 
 	raddrlen = sizeof(raddr);
 	if ((new_sock=accept(sock, (struct sockaddr *)&raddr,
@@ -125,18 +299,11 @@ main(int argc, char *argv[])
 	    continue;
 	}
 
-#ifdef IPV6
-	(void)printf("Connection from %s/%d\n",
-		     inet_ntop(AF_INET6, (void *)&raddr.sin6_addr,
-			       addrbuf, sizeof(addrbuf)),
-		     ntohs(raddr.sin6_port));
-#else
 	(void)printf("Connection from %s/%d\n",
 		     inet_ntoa(raddr.sin_addr), ntohs(raddr.sin_port));
-#endif
 
 	/* do something */
-	close(new_sock);
+	handle_connection(new_sock);
     }
 
     return 0;
