@@ -1,4 +1,4 @@
-/* $NiH: dccserver.c,v 1.52 2003/05/06 21:39:54 wiz Exp $ */
+/* $NiH: dccserver.c,v 1.53 2003/05/10 20:49:40 wiz Exp $ */
 /*-
  * Copyright (c) 2002, 2003 Thomas Klausner.
  * All rights reserved.
@@ -79,6 +79,8 @@ void warn(const char *, ...);
 void warnx(const char *, ...);
 #endif
 
+extern void child_loop(int sock, int id);
+
 /* backlog argument for listen() */
 #define BACKLOG 10
 
@@ -86,11 +88,16 @@ typedef enum state_e { ST_NONE, ST_CHAT, ST_FSERVE, ST_SEND, ST_GET,
 		       ST_GETFILE, ST_END } state_t;
 
 static int echo_input;
-static char filename[1024];
-static long filesize;
+#if 0
+char filename[1024];
+long filesize;
+#endif
 static int filter_control_chars;
-static char nickname[1024];
-static char partner[100];
+char nickname[1024];
+#if 0
+char partner[100];
+#endif
+extern char partner[];
 static const char *prg;
 
 volatile int sigchld = 0;
@@ -116,6 +123,7 @@ say(const char *line, FILE *fp)
     return;
 }
 
+#if 0
 void
 tell_client(FILE *fp, int retcode, char *fmt, ...)
 {
@@ -135,7 +143,9 @@ tell_client(FILE *fp, int retcode, char *fmt, ...)
 
     return;
 }
+#endif
 
+#if 0
 /* get and save file from network */
 int
 get_file(int id, FILE *fp)
@@ -189,8 +199,8 @@ get_file(int id, FILE *fp)
     }
 
     if (lseek(out, offset, SEEK_SET) != offset) {
-	warn("can't seek to offset %ld", offset);
-	tell_client(fp, 151, NULL);
+	warn("can't seek to offset %ld - restarting", offset);
+	offset = 0;
     }
 
     tell_client(fp, 121, "%ld", offset);
@@ -251,10 +261,11 @@ get_file(int id, FILE *fp)
 
     return -1;
 }
+#endif
 
 /* some fserves incorrectly include the complete path -- */
 /* strip it off */
-static char *
+char *
 strip_path(char *p)
 {
     char *q;
@@ -266,6 +277,8 @@ strip_path(char *p)
 
     return p;
 }
+
+#if 0
 /* parse line given by remote client */
 int
 parse_get_line(char *line)
@@ -294,6 +307,7 @@ parse_get_line(char *line)
 
     return 0;
 }    
+#endif
 
 /* display line given from remote; filter out some characters */
 /* assumes ASCII text */
@@ -371,6 +385,7 @@ sig_handle(int signo)
     return;
 }
 
+#if 0
 /* parse line from client, update state machine, and reply */
 state_t
 converse_with_client(FILE *fp, state_t state, char *line, int id)
@@ -449,7 +464,9 @@ converse_with_client(FILE *fp, state_t state, char *line, int id)
 
     return ret;
 }
+#endif
 
+#if 0
 /* main child routine: read line from client and call parser */
 void
 communicate_with_client(int sock, int id)
@@ -485,6 +502,7 @@ communicate_with_client(int sock, int id)
     (void)fclose(fp);
     exit(0);
 }
+#endif
 
 /*
  * create child to handle connection and update structure tracking
@@ -511,7 +529,11 @@ handle_connection(int sock, int oldsock)
     switch(child=fork()) {
     case 0:
 	close(oldsock);
+#if 0
 	communicate_with_client(sock, i);
+#else
+	child_loop(sock, i);
+#endif
 	/* UNREACHABLE */
 	_exit(1);
 
