@@ -1,0 +1,5 @@
+2002-10-17  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
+
+	* debian/*: Add Debian package support provided by Aubin Paul
+	<aubin@punknews.org>.
+
