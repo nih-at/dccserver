@@ -1,6 +1,6 @@
 .\" Converted with mdoc2man 0.2
-.\" from NiH: dccsend.mdoc,v 1.3 2003/05/25 00:40:00 wiz Exp 
-.\" $NiH: dccsend.mdoc,v 1.3 2003/05/25 00:40:00 wiz Exp $
+.\" from NiH: dccsend.mdoc,v 1.5 2003/11/02 11:44:47 wiz Exp 
+.\" $NiH: dccsend.mdoc,v 1.5 2003/11/02 11:44:47 wiz Exp $
 .\"
 .\" Copyright (c) 2003 Thomas Klausner.
 .\" All rights reserved.
@@ -32,7 +32,7 @@
 .\" SUCH DAMAGE.
 .TH DCCSEND 1 "May 25, 2003" NiH
 .SH "NAME"
-dccsend \- send a file to a MIRC /dccserver
+dccsend \- send a file to a mIRC /dccserver
 .SH "SYNOPSIS"
 .B dccsend
 [\fB-hv\fR]
@@ -43,7 +43,7 @@ dccsend \- send a file to a MIRC /dccserver
 \fBfilename\fR
 .SH "DESCRIPTION"
 .B dccsend
-sends a file to remote host running a MIRC /dccserver or
+sends a file to remote host running a mIRC /dccserver or
 dccserver(1).
 The
 \fBhost\fR
@@ -79,7 +79,7 @@ Denote
 on which the remote
 dccserver(1)
 is listening.
-Defaults to 59, since that is MIRC's default port.
+Defaults to 59, since that is mIRC's default port.
 .TP 17
 \fB-r\fR \fBremotenick\fR
 Expected nickname on the remote side.
