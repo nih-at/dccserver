@@ -1,5 +1,7 @@
 2003-05-11  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
 
+	* child.c (child_loop): readd CHAT support.
+
 	* dccserver.c (main): kill children when quitting.
 	(kill_children): new function.
 	(collect_child): handle sigchild.

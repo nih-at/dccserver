@@ -1,4 +1,4 @@
-/* $NiH: child.c,v 1.8 2003/05/11 02:40:13 wiz Exp $ */
+/* $NiH: child.c,v 1.9 2003/05/11 14:56:40 wiz Exp $ */
 /*-
  * Copyright (c) 2003 Thomas Klausner.
  * All rights reserved.
@@ -48,8 +48,6 @@ struct transfer_state {
 };
 
 static char partner[100];
-extern void display_remote_line(int, const unsigned char *);
-extern char *strip_path(char *);
 
 /* maximum line length accepted from remote */
 #define BUFSIZE 4096
@@ -129,6 +127,8 @@ fdgets(int fd, char *buf, int bufsize)
 
     if (bufsize <= 0)
 	return 0;
+
+    buf[0] = '\0';
 
     /* get remaining bytes, even if not a complete line */
     if (fd == -1) {
@@ -248,7 +248,6 @@ display_remote_line(int id, const unsigned char *p)
 	}
 	p++;
     }
-    putchar('\n');
     fflush(stdout);
 }
 
@@ -680,6 +679,7 @@ get_line_from_client(int sock, int id, state_t state, void **arg)
 void
 child_loop(int sock, int id)
 {
+    char line[BUFSIZE];
     state_t state;
     void *arg;
     int ret;
@@ -706,6 +706,25 @@ child_loop(int sock, int id)
 		cleanup_read_file((struct transfer_state *)arg, id);
 		state = ST_END;
 	    }
+	    break;
+
+	case ST_CHAT:
+	    switch (fdgets(sock, line, sizeof(line))) {
+	    case -1:
+		/* error */
+	    case 0:
+		/* connection closed */
+		state = ST_END;
+		break;
+	    case -2:
+		/* timeout, ignored */
+		break;
+
+	    default:
+		display_remote_line(id, line);
+		break;
+	    }
+
 	    break;
 
 	default:
