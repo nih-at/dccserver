@@ -1,4 +1,4 @@
-/* $NiH: dccsend.c,v 1.7 2003/04/05 00:04:48 wiz Exp $ */
+/* $NiH: dccsend.c,v 1.8 2003/04/05 00:38:24 wiz Exp $ */
 /*-
  * Copyright (c) 2003 Thomas Klausner.
  * All rights reserved.
@@ -282,8 +282,8 @@ usage(void)
 	    "%s [-hv] [-n nickname] [-p port] [-r remotenick] host filename\n"
 	    "Where nickname is the own nick that should be used (default: 'dccserver'),\n"
 	    "port is the port on which the remote dccserver listens (default: 59),\n"
-	    "and remotenick is the expected remote nickname on the server (default: accept any);\n",
-	    "host is the internet hostname to connect to, and filename is the file to send.",
+	    "and remotenick is the expected remote nickname on the server (default: accept any);\n"
+	    "host is the internet hostname to connect to, and filename is the file to send.\n",
 	    prg, prg);
     exit(1);
 }
