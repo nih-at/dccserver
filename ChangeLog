@@ -1,11 +1,32 @@
+2003-01-22  Thomas Klausner  <wiz@dmath5.geometrie.tuwien.ac.at>
+
+	* dccserver.c: add prototype for strlcpy if needed. Suggestion by
+	Per von Zweigbergk <pvz@e.kth.se>.
+	(get_file): add " got" in closing-connection-string. From Per von
+	Zweigbergk <pvz@e.kth.se>.
+	(main): install signal handlers later.
+
+	* Makefile.am (install-exec-hook): install dccserver setuid root.
+	* dccserver.c: chroot(2) to current dir; drop setuid bits after
+	opening the DCC port. Suggestion by Per von Zweigbergk
+	<pvz@e.kth.se>.
+	
+	* COPYING, dccserver.c: update copyright year.
+
+	* COPYING: remove paragraph about snprintf.c.
+	* configure.ac, Makefile.am (EXTRA_DIST): remove snprintf.c.
+	* snprintf.c: removed.
+	* dccserver.c: use fputs/puts/strlcpy instead of fprintf and
+	snprintf.
+
 2002-11-15  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
 
-	* mkinstalldirs: Update to automake 1.7.1 version.
+	* mkinstalldirs: update to automake 1.7.1 version.
 
-	* configure.ac: Update to autoconf 2.56.
+	* configure.ac: update to autoconf 2.56.
 
 2002-10-17  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
 
-	* Makefile.am, NEWS, debian/*: Add Debian package support provided
+	* Makefile.am, NEWS, debian/*: add Debian package support provided
 	by Aubin Paul <aubin@punknews.org>.
 

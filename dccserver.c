@@ -1,6 +1,6 @@
-/* $NiH: dccserver.c,v 1.23 2002/10/15 23:09:42 wiz Exp $ */
+/* $NiH: dccserver.c,v 1.24 2002/10/15 23:38:50 wiz Exp $ */
 /*-
- * Copyright (c) 2002 Thomas Klausner.
+ * Copyright (c) 2002, 2003 Thomas Klausner.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -55,6 +55,10 @@
 typedef unsigned int socklen_t;
 #endif
 
+#ifndef HAVE_STRLCPY
+size_t strlcpy(char *, const char *, size_t);
+#endif
+
 #define BACKLOG 10
 
 typedef enum state_e { ST_NONE, ST_CHAT, ST_FSERVE, ST_SEND, ST_GET,
@@ -95,12 +99,12 @@ tell_client(FILE *fp, int retcode, char *fmt, ...)
 
     fprintf(fp, "%03d %s", retcode, nickname);
     if (fmt != NULL) {
-	fprintf(fp, " ");
+	fputs(" ", fp);
 	va_start(ap, fmt);
 	vfprintf(fp, fmt, ap);
 	va_end(ap);
     }
-    fprintf(fp, "\n");
+    fputs("\n", fp);
     fflush(fp);
 
     return;
@@ -173,7 +177,7 @@ get_file(FILE *fp)
 	return 0;
     }
     else {
-	warnx("client closed connection for `%s' (%ld/%ld bytes, "
+	warnx("client closed connection for `%s' (%ld/%ld bytes got, "
 	      "%ld new)", filename, filesize-rem, filesize,
 	      filesize-offset-rem);
     }    
@@ -481,13 +485,21 @@ main(int argc, char *argv[])
     struct sockaddr_in laddr;
     struct pollfd pollset[2];
 
-    snprintf(nickname, sizeof(nickname), "dccserver");
+    strlcpy(nickname, "dccserver", sizeof(nickname));
     port = 59;
     prg = argv[0];
-    for (c=0; c<NO_OF_CHILDREN; c++)
-	children[c].pid = -1;
 
-    signal(SIGCHLD, sig_handle);
+    /* trying to imprison dccserver in a chroot */
+    if (chroot(".") == -1) {
+	if (errno == EPERM) {
+	    fputs("dccserver is not setuid root.\n"
+		  "For binding below port 1024 (like the default port 59),\n"
+		  "root privileges are needed.  Additionally, dccserver\n"
+		  "will chroot(2) itself to the current directory to reduce\n"
+		  "effect of any exploits.\n", stderr);
+	}
+	warn("can't chroot");
+    }
 
     while ((c=getopt(argc, argv, "hn:p:v")) != -1) {
 	switch(c) {
@@ -495,11 +507,11 @@ main(int argc, char *argv[])
 	    usage();
 
 	case 'v':
-	    printf(PACKAGE_STRING "\n");
+	    puts(PACKAGE_STRING "\n");
 	    exit(0);
 
 	case 'n':
-	    snprintf(nickname, sizeof(nickname), "%s", optarg);
+	    strlcpy(nickname, optarg, sizeof(nickname));
 	    break;
 
 	case 'p':
@@ -523,7 +535,7 @@ main(int argc, char *argv[])
 	err(1, "can't set socket close-on-exec");
     }
 
-    /* Tell system that local addresses can be reused. */
+    /* Tell system that local addresses can be re-used. */
     sock_opt = 1;
     if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (void *)&sock_opt,
 		   sizeof(sock_opt)) == -1) {
@@ -541,8 +553,16 @@ main(int argc, char *argv[])
 	err(1, "can't bind socket to port %ld", port);
     }
 
+    /* drop privileges */
+    seteuid(getuid());
+    setuid(getuid());
+
     if (listen(sock, BACKLOG) == -1)
 	err(1, "can't listen on socket");
+
+    for (c=0; c<NO_OF_CHILDREN; c++)
+	children[c].pid = -1;
+    signal(SIGCHLD, sig_handle);
 
     while (1) {
 	struct sockaddr_in raddr;
