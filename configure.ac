@@ -3,7 +3,7 @@ dnl Process this file with autoconf to produce a configure script.
 dnl init
 
 AC_PREREQ(2.50)
-AC_REVISION([$NiH: configure.ac,v 1.4 2002/10/15 21:56:29 wiz Exp $])
+AC_REVISION([$NiH: configure.ac,v 1.5 2002/10/15 23:25:52 wiz Exp $])
 AC_INIT([dccserver], [0.1], [tk@giga.or.at])
 AC_CONFIG_SRCDIR([dccserver.c])
 AC_CONFIG_HEADERS([config.h])
@@ -26,6 +26,10 @@ dnl library functions
 
 dnl AC_REPLACE_FUNCS(getopt_long)
 AC_REPLACE_FUNCS([err snprintf strlcpy warn warnx])
+
+dnl types
+
+AC_CHECK_TYPES(socklen_t, , , [#include <sys/socket.h>])
 
 dnl case $host_os
 dnl in

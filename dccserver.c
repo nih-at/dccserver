@@ -1,4 +1,4 @@
-/* $NiH: dccserver.c,v 1.22 2002/10/15 22:12:22 dillo Exp $ */
+/* $NiH: dccserver.c,v 1.23 2002/10/15 23:09:42 wiz Exp $ */
 /*-
  * Copyright (c) 2002 Thomas Klausner.
  * All rights reserved.
@@ -50,6 +50,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+
+#ifndef HAVE_SOCKLEN_T
+typedef unsigned int socklen_t;
+#endif
 
 #define BACKLOG 10
 
@@ -542,7 +546,7 @@ main(int argc, char *argv[])
 
     while (1) {
 	struct sockaddr_in raddr;
-	unsigned int raddrlen;
+	socklen_t raddrlen;
 	int new_sock;
 
 	/* clean up after dead children */
