@@ -1,3 +1,4 @@
+/* $NiH$ */
 #include <sys/socket.h>
 #include <err.h>
 #include <stdio.h>
