@@ -1,3 +1,12 @@
+0.2:
+	Allow receiving more bytes than filesize; show a warning.
+	Could be useful when sender doesn't have the complete file when
+	starting the dcc send, and in some other cases. Based on patches
+	by Per von Zweigbergk <pvz@e.kth.se>.
+
+	Install as setuid root; drop privileges as soon as possible,
+	and chroot to current directory. Based on patches by
+	Per von Zweigbergk <pvz@e.kth.se>.
 
 	Debian package support, provided by Aubin Paul <aubin@punknews.org>.
 
