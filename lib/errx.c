@@ -1,4 +1,4 @@
-/* $NiH$ */
+/* $NiH: errx.c,v 1.1 2003/04/04 12:29:38 wiz Exp $ */
 /*-
  * Copyright (c) 2003 Thomas Klausner.
  * All rights reserved.
@@ -34,6 +34,7 @@
 
 #include <stdarg.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 void
 errx(int status, const char *fmt, ...)

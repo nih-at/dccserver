@@ -1,4 +1,4 @@
-/* $NiH$ */
+/* $NiH: err.c,v 1.1 2002/10/15 18:41:11 wiz Exp $ */
 /*-
  * Copyright (c) 2002 Thomas Klausner.
  * All rights reserved.
@@ -35,6 +35,7 @@
 #include <errno.h>
 #include <stdarg.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 void
