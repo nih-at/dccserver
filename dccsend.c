@@ -1,4 +1,4 @@
-/* $NiH: dccsend.c,v 1.11 2003/04/07 12:00:34 wiz Exp $ */
+/* $NiH: dccsend.c,v 1.12 2003/04/12 13:39:18 wiz Exp $ */
 /*-
  * Copyright (c) 2003 Thomas Klausner.
  * All rights reserved.
@@ -32,6 +32,7 @@
   
 #include "config.h"
 
+#include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
 #ifdef HAVE_ERR_H
