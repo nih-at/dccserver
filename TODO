@@ -12,6 +12,7 @@ Planned changes
   all replacement functions or -lpoll
 . warn in autoconf if poll and sys/poll.h are not found, not in
   dccserver.c.
+. stop particular child processes
 
 Possible changes
 . make get work
