@@ -12,5 +12,5 @@ write there). I'll assume /usr/local for now, if not, replace it
 with the path you chose below.
 
 In the dccserver directory, start configure like this:
-	CPPFLAGS=-I/usr/local/include LDFLAGS=-L/usr/local/lib ./configure
+	./configure CPPFLAGS=-I/usr/local/include LDFLAGS=-L/usr/local/lib
 afterwards 'make' and 'make install' should just work fine.
