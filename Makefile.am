@@ -6,6 +6,8 @@ LDADD=@LIBOBJS@
 dccserver_SOURCES=dccserver.c child.c
 dccsend_SOURCES=dccsend.c
 
+noinst_HEADERS=	dccserver.h
+
 DISTCLEANFILES=	dccserver.1 dccsend.1
 
 EXTRA_DIST=	dccserver.man dccserver.mdoc \
