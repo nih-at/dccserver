@@ -1,4 +1,4 @@
-/* $NiH: dccserver.c,v 1.26 2003/01/22 15:42:43 wiz Exp $ */
+/* $NiH: dccserver.c,v 1.27 2003/01/22 16:49:50 wiz Exp $ */
 /*-
  * Copyright (c) 2002, 2003 Thomas Klausner.
  * All rights reserved.
@@ -57,6 +57,18 @@ typedef unsigned int socklen_t;
 
 #ifndef HAVE_STRLCPY
 size_t strlcpy(char *, const char *, size_t);
+#endif
+
+#ifndef HAVE_ERR
+void err(int, const char *, ...);
+#endif
+
+#ifndef HAVE_WARN
+void warn(const char *, ...);
+#endif
+
+#ifndef HAVE_WARNX
+void warnx(const char *, ...);
 #endif
 
 #define BACKLOG 10
@@ -556,7 +568,9 @@ main(int argc, char *argv[])
     }
 
     /* drop privileges */
+#ifdef HAVE_SETEUID
     seteuid(getuid());
+#endif
     setuid(getuid());
 
     if (listen(sock, BACKLOG) == -1)

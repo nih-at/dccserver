@@ -2,6 +2,10 @@
 
 	* configure.ac: Bump version to 0.2.
 
+	* configure.ac: check for seteuid.
+	* dccserver.c: add more prototypes for replacement functions.
+	(main): ifdef out seteuid if not existing.
+
 	* dccserver.mdoc: update for using chroot and setuid.
 	* dccserver.man: regen.
 
