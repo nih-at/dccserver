@@ -1,0 +1,16 @@
+How to compile dccserver on Darwin
+==================================
+
+These instructions were tested on Darwin 6.5 (MacOS X 10.2.5/Jaguar).
+
+Darwin is missing the poll() function. Download
+	http://www.clapper.org/software/poll/poll-emulator-1.4.tar.gz
+extract it and edit the Makefile; follow the instructions in the
+paragraph where it says 'On Mac OS X ...', and set PREFIX to a
+value you can write to (the default /usr/local is fine, if you can
+write there). I'll assume /usr/local for now, if not, replace it
+with the path you chose below.
+
+In the dccserver directory, start configure like this:
+	CPPFLAGS=-I/usr/local/include LDFLAGS=-L/usr/local/lib ./configure
+afterwards 'make' and 'make install' should just work fine.

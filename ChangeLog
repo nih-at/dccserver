@@ -1,5 +1,9 @@
 2003-05-02  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
 
+	* configure.ac: 0.3a test release.
+
+	* README.Darwin: add instructions for Darwin.
+
 	* configure.ac: check for poll.h and sys/poll.h.
 	(USE_LIBPOLL): detect poll library (if any), and point to poll
 	emulation lib if no poll() is found.

@@ -1,3 +1,6 @@
+0.3a: (test release)
+	Simplified build on Darwin, and included instructions.
+
 	dccserver can now listen on multiple ports; just specify
 	-p multiple times.
 	Requested by Maik Zumstrull <Maik.Zumstrull@gmx.de>.
