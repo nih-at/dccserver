@@ -10,6 +10,7 @@
 	* configure.ac: use errx if needed.
 	* errx.c (errx): new file.
 	* COPYING: mention errx.c.
+	* Makefile.am (EXTRA_DIST): add errx.c.
 
 	* warnx.c (warnx): use fputs instead of fprintf.
 
