@@ -1,4 +1,4 @@
-/* $NiH: dccserver.c,v 1.49 2003/05/02 16:39:41 wiz Exp $ */
+/* $NiH: dccserver.c,v 1.50 2003/05/02 17:09:12 wiz Exp $ */
 /*-
  * Copyright (c) 2002, 2003 Thomas Klausner.
  * All rights reserved.
@@ -79,6 +79,7 @@ void warn(const char *, ...);
 void warnx(const char *, ...);
 #endif
 
+/* backlog argument for listen() */
 #define BACKLOG 10
 
 typedef enum state_e { ST_NONE, ST_CHAT, ST_FSERVE, ST_SEND, ST_GET,
