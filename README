@@ -24,8 +24,8 @@ Text coming from the clients will be shown prepended by their
 nickname.
 
 If you package this program, please reference either of
-	ftp://ftp.giga.or.at/pub/nih/dccserver/
-	http://www.giga.or.at/pub/nih/dccserver/
+	ftp.giga.or.at /pub/nih/dccserver/
+	http://ftp.giga.or.at/pub/nih/dccserver/
 as the master distribution site.
 
 Please send bug reports, comments, and praise to
