@@ -1,5 +1,8 @@
 2003-04-07  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
 
+	* dccserver.mdoc: add -e to SYNOPSIS.
+	* dccserver.man: regen.
+
 	* configure.ac: Bump to 0.3.
 
 2003-04-05  Thomas Klausner  <wiz@danbala.tuwien.ac.at>

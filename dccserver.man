@@ -1,6 +1,6 @@
 .\" Converted with mdoc2man 0.2
-.\" from NiH: dccserver.mdoc,v 1.9 2003/04/05 10:45:53 wiz Exp 
-.\" $NiH: dccserver.mdoc,v 1.9 2003/04/05 10:45:53 wiz Exp $
+.\" from NiH: dccserver.mdoc,v 1.10 2003/04/07 10:26:31 wiz Exp 
+.\" $NiH: dccserver.mdoc,v 1.10 2003/04/07 10:26:31 wiz Exp $
 .\"
 .\" Copyright (c) 2002, 2003 Thomas Klausner.
 .\" All rights reserved.
@@ -35,7 +35,7 @@
 dccserver \- simulate MIRC's /dccserver command
 .SH "SYNOPSIS"
 .B dccserver
-[\fB-hiv\fR]
+[\fB-ehiv\fR]
 [\fB-n\fR \fBnickname\fR]
 [\fB-p\fR \fBport\fR]
 .SH "DESCRIPTION"
