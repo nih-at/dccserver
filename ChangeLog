@@ -1,5 +1,12 @@
 2003-04-04  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
 
+	* getaddrinfo.h: new file, from Dieter Baron.
+	* getaddrinfo.c: new file, from Dieter Baron.
+	* configure.ac: use getaddrinfo.c, if needed.
+	* dccsend.c: include getaddrinfo.h, if needed.
+	* Makefile.am (EXTRA_DIST): add getaddrinfo.[ch].
+	* COPYING: add license for getaddrinfo.[ch].
+
 	* dccserver.c (handle_connection): add fflush(stderr).
 	(converse_with_client): here too.
 

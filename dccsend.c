@@ -1,4 +1,4 @@
-/* $NiH: dccsend.c,v 1.3 2003/04/04 12:52:06 wiz Exp $ */
+/* $NiH: dccsend.c,v 1.4 2003/04/04 13:27:45 wiz Exp $ */
 /*-
  * Copyright (c) 2003 Thomas Klausner.
  * All rights reserved.
@@ -49,6 +49,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+
+#ifndef HAVE_GETADDRINFO
+#include "getaddrinfo.h"
+#endif
 
 #ifndef HAVE_STRLCPY
 size_t strlcpy(char *, const char *, size_t);
