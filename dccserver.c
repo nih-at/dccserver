@@ -1,4 +1,4 @@
-/* $NiH: dccserver.c,v 1.15 2002/10/15 12:02:08 wiz Exp $ */
+/* $NiH: dccserver.c,v 1.16 2002/10/15 13:36:52 wiz Exp $ */
 /*-
  * Copyright (c) 2002 Thomas Klausner.
  * All rights reserved.
@@ -431,7 +431,7 @@ usage(void)
 	    "%s [-n nickname] [-p port]\n"
 	    "Where port is the port on which %s should listen,\n"
 	    "and nickname the nick that should be used (defaults are 59 "
-	    "and 'dccserver').", prg, prg, prg);
+	    "and 'dccserver').\n", prg, prg, prg);
     exit(1);
 }
 
@@ -489,7 +489,7 @@ main(int argc, char *argv[])
 	    usage();
 
 	case 'v':
-	    printf(PROGRAM " " VERSION);
+	    printf(PROGRAM " " VERSION "\n");
 	    exit(0);
 
 	case 'n':
