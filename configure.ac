@@ -3,7 +3,7 @@
 # init
 
 AC_PREREQ(2.57)
-AC_REVISION([$NiH: configure.ac,v 1.25 2003/05/13 13:39:37 wiz Exp $])
+AC_REVISION([$NiH: configure.ac,v 1.26 2003/05/14 08:22:41 wiz Exp $])
 AC_INIT([dccserver],[0.3b],[wiz@danbala.tuwien.ac.at])
 AC_CONFIG_SRCDIR([dccserver.c])
 AC_CONFIG_HEADERS([config.h])
@@ -35,7 +35,8 @@ AC_REPLACE_FUNCS([err errx poll strlcpy warn warnx])
 
 # types
 
-AC_CHECK_TYPES(socklen_t, , , [#include <sys/socket.h>])
+AC_CHECK_TYPES(socklen_t, , , [#include <sys/types.h>
+#include <sys/socket.h>])
 
 case $host_os
 in
