@@ -1,7 +1,7 @@
 . accept multiple port arguments, and listen on all of them
 . make get work
 . make fserve work
-. make it easier to find out which child does what
+. make it easier to find out which child does what (SIGINFO?)
 . timeouts
 . don't send data to 'Send' connections -- they quit in this case
 . download speed indicator
@@ -12,6 +12,8 @@
 . bind to specific IP only?
 . disallow particular clients?
 . readline?
+. write dccclient?
+. rewrite to have only one program instead of forking?
 
 Might want to fix:
 hppa11: dccserver.c: In function `main':
