@@ -1,5 +1,11 @@
 2003-05-12  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
 
+	* COPYING: add copyright for lib/poll.[ch].
+
+	* configure.ac, Makefile.am, lib/: moved replacement functions to
+	lib/ subdir, added poll replacement function from Brian M Clapper
+	for building on Darwin.
+	
 	* dccserver.mdoc: document "close" command.
 	* dccserver.man: regen.
 
