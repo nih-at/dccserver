@@ -26,3 +26,10 @@ install-exec-hook:
 		chmod u+s $(bindir)/dccserver && \
 		echo NOTE: dccserver has been installed setuid root.) || \
 	echo dccserver NOT installed setuid root.
+
+update-man:
+	mdoc2man dccsend.mdoc > dccsend.$$$$ && diff -I NiH dccsend.$$$$ dccsend.man \
+		|| mv dccsend.$$$$ dccsend.man
+	mdoc2man dccserver.mdoc > dccserver.$$$$ && diff -I NiH dccserver.$$$$ dccserver.man \
+		|| mv dccserver.$$$$ dccserver.man
+	rm -f dccsend.$$$$ dccserver.$$$$
