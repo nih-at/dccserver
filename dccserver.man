@@ -1,6 +1,6 @@
 .\" Converted with mdoc2man 0.2
-.\" from NiH: dccserver.mdoc,v 1.7 2003/04/03 09:31:51 wiz Exp 
-.\" $NiH: dccserver.mdoc,v 1.7 2003/04/03 09:31:51 wiz Exp $
+.\" from NiH: dccserver.mdoc,v 1.9 2003/04/05 10:45:53 wiz Exp 
+.\" $NiH: dccserver.mdoc,v 1.9 2003/04/05 10:45:53 wiz Exp $
 .\"
 .\" Copyright (c) 2002, 2003 Thomas Klausner.
 .\" All rights reserved.
@@ -30,7 +30,7 @@
 .\" OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
 .\" OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
-.TH DCCSERVER 1 "January 22, 2003" NiH
+.TH DCCSERVER 1 "April 5, 2003" NiH
 .SH "NAME"
 dccserver \- simulate MIRC's /dccserver command
 .SH "SYNOPSIS"
@@ -138,9 +138,6 @@ Thomas Klausner <tk@giga.or.at.>
 Get and Fserve modes are not yet supported.
 .PP
 There are no timeouts yet.
-.PP
-It is not easy to see which child number corresponds to which remote
-client (nickname).
 .SH "SECURITY CONSIDERATIONS"
 MIRC's default port is 59.
 To bind to ports below 1024, one needs root privileges; for this reason
