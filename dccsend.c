@@ -1,4 +1,4 @@
-/* $NiH: dccsend.c,v 1.12 2003/04/12 13:39:18 wiz Exp $ */
+/* $NiH: dccsend.c,v 1.13 2003/05/02 15:58:07 wiz Exp $ */
 /*-
  * Copyright (c) 2003 Thomas Klausner.
  * All rights reserved.
@@ -55,6 +55,10 @@ size_t strlcpy(char *, const char *, size_t);
 
 #ifndef HAVE_ERR
 void err(int, const char *, ...);
+#endif
+
+#ifndef HAVE_ERRX
+void errx(int, const char *, ...);
 #endif
 
 #ifndef HAVE_WARN
