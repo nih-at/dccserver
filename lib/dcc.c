@@ -1,4 +1,4 @@
-/* $NiH: dcc.c,v 1.1 2003/05/25 00:00:33 wiz Exp $ */
+/* $NiH: dcc.c,v 1.2 2003/05/25 00:33:34 wiz Exp $ */
 /*-
  * Copyright (c) 2003 Thomas Klausner.
  * All rights reserved.
@@ -31,7 +31,6 @@
  */
 
 #include "config.h"
-#include "dccserver.h"
 
 #ifdef HAVE_ERR_H
 #include <err.h>
