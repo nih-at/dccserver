@@ -1,4 +1,4 @@
-/* $NiH: dccserver.c,v 1.27 2003/01/22 16:49:50 wiz Exp $ */
+/* $NiH: dccserver.c,v 1.28 2003/01/22 17:32:40 wiz Exp $ */
 /*-
  * Copyright (c) 2002, 2003 Thomas Klausner.
  * All rights reserved.
@@ -374,7 +374,6 @@ communicate_with_client(int sock)
 {
     FILE *fp;
     char buf[8192];
-    char *p;
     state_t state;
 
     state = ST_NONE;
@@ -389,7 +388,7 @@ communicate_with_client(int sock)
 	    /* empty line */
 	    *buf = '\0';
 	}
-	else if ((p=strtok(buf, "\n\r")) == NULL) {
+	else if (strtok(buf, "\n\r") == NULL) {
 	    warn("client sent too long line");
 	    tell_client(fp, 151, NULL);
 	    state = ST_END;

@@ -1,5 +1,7 @@
 2003-01-23  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
 
+	* dccserver.c (communicate_with_client): remove unused variable.
+
 	* config.guess: update to 2003-01-10, prompted by Aubin Paul.
 	* config.sub: update to 2003-01-22, prompted by Aubin Paul.
 
