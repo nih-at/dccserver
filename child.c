@@ -1,4 +1,4 @@
-/* $NiH: child.c,v 1.17 2003/05/14 12:37:25 wiz Exp $ */
+/* $NiH: child.c,v 1.18 2003/05/14 13:05:58 wiz Exp $ */
 /*-
  * Copyright (c) 2003 Thomas Klausner.
  * All rights reserved.
@@ -65,6 +65,7 @@ void warn(const char *, ...);
 void warnx(const char *, ...);
 #endif
 
+#include "dcc.h"
 #include "io.h"
 #include "util.h"
 
@@ -87,9 +88,6 @@ static char partner[100];
 
 /* maximum format string length accepted from program itself */
 #define FMTSIZE 1024
-
-/* maximum number of errors before connection gets closed */
-#define MAX_ERRORS   3
 
 /* display line given from remote; filter out some characters */
 /* assumes ASCII text */
@@ -149,35 +147,6 @@ display_remote_line(int id, const char *p)
 	p++;
     }
     fflush(stdout);
-}
-
-
-/* parse GET line given by remote client */
-int
-parse_get_line(char *line, char **filename, long *filesize)
-{
-    char *p, *q, *endptr;
-
-    if ((p=strchr(line+4, ' ')) == NULL)
-	return -1;
-    *p = '\0';
-    strlcpy(partner, line+4, sizeof(partner));
-
-    q = p+1;
-    if ((p=strchr(q, ' ')) == NULL)
-	return -1;
-    *p = '\0';
-
-    *filesize = strtol(q, &endptr, 10);
-    if (*q == '\0' || *endptr != '\0' || (*filesize <=0))
-	return -1;
-
-    /* remove path components in file name */
-    q = strip_path(p+1);
-    if ((*filename=strdup(q)) == NULL)
-	return -1;
-
-    return 0;
 }
 
 /* return difference between two timevals in ms */
@@ -403,18 +372,20 @@ state_t
 parse_client_reply(int fd, int id, state_t state, char *line, struct transfer_state **arg)
 {
     state_t ret;
+    char *arg2, *arg3, *endptr, *filename;
+    long filesize;
 
+    arg2 = arg3 = filename = NULL;
     ret = state;
     switch(state) {
     case ST_NONE:
-	if (strncmp("100 ", line, 4) == 0) {
-	    strlcpy(partner, line+4, sizeof(partner));
+	switch(parse_reply(line, partner, sizeof(partner), &arg2, &arg3)) {
+	case 100:
 	    tell_client(fd, 101, NULL);
 	    warnx("child %d: %s wants to chat", id, partner);
 	    ret = ST_CHAT;
-	}
-	else if (strncmp("110 ", line, 4) == 0) {
-	    strlcpy(partner, line+4, sizeof(partner));
+	    break;
+	case 110:
 #ifdef NOT_YET
 	    tell_client(fd, 111, NULL);
 	    warnx("child %d: %s using fserve", id, partner);
@@ -422,17 +393,15 @@ parse_client_reply(int fd, int id, state_t state, char *line, struct transfer_st
 #endif
 	    tell_client(fd, 151, NULL);
 	    ret = ST_END;
-	}
-	else if (strncmp("120 ", line, 4) == 0) {
-	    char *filename = NULL;
-	    long filesize;
-
-	    /* Client sending file */
-	    if (parse_get_line(line, &filename, &filesize) < 0) {
+	    break;
+	case 120:
+	    filesize = strtol(arg2, &endptr, 10);
+	    if (*arg2 == '\0' || *endptr != '\0' || (filesize <= 0)) {
 		tell_client(fd, 151, NULL);
 		ret = ST_END;
 		break;
 	    }
+	    filename = strip_path(arg3);
 
 	    warnx("child %d: %s offers `%s' (%ld bytes)", id, partner,
 		  filename, filesize);
@@ -442,19 +411,21 @@ parse_client_reply(int fd, int id, state_t state, char *line, struct transfer_st
 	    if ((*arg=setup_read_file(fd, filename, filesize)) == NULL)
 		ret = ST_END;
 
-	    free(filename);
-	}
-	else if (strncmp("130 ", line, 4) == 0) {
+	    free(arg2);
+	    free(arg3);
+	    break;
+	case 130:
 #ifdef NOT_YET
 	    tell_client(fd, 131, NULL);
 	    ret = ST_GET;
 #endif
 	    tell_client(fd, 151, NULL);
 	    ret = ST_END;
-	}
-	else {
+	    break;
+	default:
 	    tell_client(fd, 151, NULL);
 	    ret = ST_END;
+	    break;
 	}
 	break;
 
@@ -482,40 +453,6 @@ parse_client_reply(int fd, int id, state_t state, char *line, struct transfer_st
     return ret;
 }
 
-/* get line from client and warn in error cases; return < 0 on problem */
-int
-get_line_from_client(int sock, int id, char *line, int linelen)
-{
-    int errcount;
-    int ret;
-
-    errcount = 0;
-
-    /* get new-line terminated line from client */
-    ret = fdgets(sock, line, linelen);
-    switch (ret) {
-    case -2:
-	warnx("timeout after %ds -- closing connection", CHAT_TIMEOUT/1000);
-	break;
-    case -1:
-	if (errno != EINTR && ++errcount > MAX_ERRORS) {
-	    warnx("child %d: %s: %d errors in a row -- closing connection", id,
-		  partner, MAX_ERRORS);
-	}
-	break;
-    default:
-	if (strtok(line, "\n\r") == NULL) {
-	    warn("client sent too long line");
-	    tell_client(sock, 151, NULL);
-	    ret = -1;
-	    break;
-	}
-	break;
-    }
-
-    return ret;
-}
-
 void
 child_loop(int sock, int id)
 {
@@ -536,8 +473,10 @@ child_loop(int sock, int id)
 
 	switch (state) {
 	case ST_NONE:
-	    if (get_line_from_client(sock, id, line, sizeof(line)) < 0)
+	    if (get_line_from_client(sock, line, sizeof(line)) < 0) {
+		warnx("child %d: closing connection", id);
 		state = ST_END;
+	    }
 	    else
 		state = parse_client_reply(sock, id, state, line, &ts);
 	    break;

@@ -1,7 +1,7 @@
 bin_PROGRAMS=dccserver dccsend
 man_MANS=dccserver.1 dccsend.1
 
-LDADD=		lib/libcompat.a
+LDADD=		lib/libdcc.a
 AM_CPPFLAGS=	-Ilib
 
 dccserver_SOURCES=dccserver.c child.c

@@ -1,6 +1,6 @@
-noinst_LIBRARIES=libcompat.a
+noinst_LIBRARIES=libdcc.a
 
-libcompat_a_SOURCES=io.c util.c
-libcompat_a_LIBADD=$(LIBOBJS)
+libdcc_a_SOURCES=dcc.c io.c util.c
+libdcc_a_LIBADD=$(LIBOBJS)
 
 noinst_HEADERS=getaddrinfo.h io.h poll.h util.h

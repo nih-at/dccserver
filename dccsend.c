@@ -1,4 +1,4 @@
-/* $NiH: dccsend.c,v 1.13 2003/05/02 15:58:07 wiz Exp $ */
+/* $NiH: dccsend.c,v 1.14 2003/05/11 02:39:38 wiz Exp $ */
 /*-
  * Copyright (c) 2003 Thomas Klausner.
  * All rights reserved.
@@ -38,20 +38,20 @@
 #ifdef HAVE_ERR_H
 #include <err.h>
 #endif /* HAVE_ERR_H */
+#include <fcntl.h>
 #include <netdb.h>
-#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 
 #ifndef HAVE_GETADDRINFO
 #include "getaddrinfo.h"
 #endif
 
-#ifndef HAVE_STRLCPY
-size_t strlcpy(char *, const char *, size_t);
-#endif
+#include "dccserver.h"
+#include "dcc.h"
+#include "io.h"
+#include "util.h"
 
 #ifndef HAVE_ERR
 void err(int, const char *, ...);
@@ -59,6 +59,10 @@ void err(int, const char *, ...);
 
 #ifndef HAVE_ERRX
 void errx(int, const char *, ...);
+#endif
+
+#ifndef HAVE_STRLCPY
+size_t strlcpy(char *, const char *, size_t);
 #endif
 
 #ifndef HAVE_WARN
@@ -71,13 +75,10 @@ void warnx(const char *, ...);
 
 #define BACKLOG 10
 
-typedef enum state_e { ST_NONE, ST_CHAT, ST_FSERVE, ST_SEND, ST_GET,
-		       ST_END } state_t;
-
 static long offset;
-static char nickname[1024];
 static char remotenick[100];
-static const char *prg;
+
+char nickname[1024];
 
 int
 connect_to_server(char *host, int port)
@@ -127,66 +128,45 @@ connect_to_server(char *host, int port)
     return s;
 }
 
-void
-tell_client(FILE *fp, int retcode, char *fmt, ...)
-{
-    va_list ap;
-
-    fflush(fp);
-    fprintf(fp, "%03d %s", retcode, nickname);
-    if (fmt != NULL) {
-	fputs(" ", fp);
-	va_start(ap, fmt);
-	vfprintf(fp, fmt, ap);
-	va_end(ap);
-    }
-    fputs("\n", fp);
-    fflush(fp);
-
-    return;
-}
-
 /* send file to network */
 int
-send_file(FILE *fp, char *filename, long filesize)
+send_file(int out, char *filename, long filesize)
 {
     char buf[8192];
     int len;
     long rem;
-    FILE *fin;
+    int in;
 
     if (filesize < offset) {
 	warnx("remote requested part after EOF (%ld < %ld)", filesize, offset);
 	return -1;
     }
 
-    if ((fin=fopen(filename, "r")) == NULL) {
+    if ((in=open(filename, O_RDONLY, 0)) < 0) {
 	warn("can't open file %s", filename);
 	return -1;
     }
 
     if (offset > 0) {
-	if (fseek(fin, offset, SEEK_SET) != 0) {
+	if (lseek(in, offset, SEEK_SET) != 0) {
 	    warn("can't seek to %ld", offset);
-	    fclose(fin);
+	    close(in);
 	    return -1;
 	}
     }
 
-    /* safety flush, needed on at least HP-UX 11 */
-    fflush(fp);
-    /* get file data into local file */
+    /* write file data to network */
     rem = filesize - offset;
-    while((len=fread(buf, 1, sizeof(buf), fin)) > 0) {
-	if (fwrite(buf, 1, len, fp) < len) {
+    while((len=read(in, buf, sizeof(buf))) > 0) {
+	if (write(out, buf, len) < len) {
 	    warn("write error on network");
-	    fclose(fin);
+	    close(in);
 	    return -1;
 	}
 	rem -= len;
     }
 
-    (void)fclose(fin);
+    (void)close(in);
 
     if (rem <= 0) {
 	warnx("sending `%s' to %s complete: %ld/%ld bytes sent, %ld new",
@@ -197,23 +177,9 @@ send_file(FILE *fp, char *filename, long filesize)
 	warnx("%s closed connection for `%s' (%ld/%ld bytes sent, "
 	      "%ld new)", remotenick, filename, filesize-rem, filesize,
 	      filesize-offset-rem);
-    }    
+    }
 
     return -1;
-}
-
-/* strip path off filename */
-static char *
-strip_path(char *p)
-{
-    char *q;
-
-    if ((q=strrchr(p, '/')) != NULL)
-	p = ++q;
-    if ((q=strrchr(p, '\\')) != NULL)
-	p = ++q;
-
-    return p;
 }
 
 /* parse line given by remote client */
@@ -238,45 +204,41 @@ parse_send_line(char *line)
 
 /* main child routine: read line from client and call parser */
 void
-communicate_with_server(int sock, char *filename, long filesize)
+communicate_with_server(int fd, char *filename, long filesize)
 {
-    FILE *fp;
     char buf[8192];
     state_t state;
 
     state = ST_NONE;
 
-    if ((fp=fdopen(sock, "r+")) == NULL) {
-	(void)close(sock);
-	err(1, "[child] can't fdopen");
-    }
-    
-    tell_client(fp, 120, "%ld %s", filesize, strip_path(filename));
-    /* XXX: one chance only */
-    if (fgets(buf, sizeof(buf), fp) != NULL) {
-	if (strncmp("121 ", buf, 4) == 0) {
-	    /* accepted */
-	    if (parse_send_line(buf) < 0) {
-		warnx("invalid reply: %s", buf);
-	    }
-	    else /* XXX: verify remote user */
-		send_file(fp, filename, filesize);
-	}
-	else if (strncmp("150 ", buf, 4) == 0)
-	    warnx("remote unavailable");
-	else if (strncmp("151 ", buf, 4) == 0)
-	    warnx("remote denied");
-	else {
-	    warnx("invalid reply: %s", buf);
-	}
+    tell_client(fd, 120, "%ld %s", filesize, strip_path(filename));
+    if (get_line_from_client(fd, buf, sizeof(buf)) < 0) {
+	warnx("closing connection");
+	(void)close(fd);
+	return;
     }
 
-    (void)fclose(fp);
+    if (strncmp("121 ", buf, 4) == 0) {
+	/* accepted */
+	if (parse_send_line(buf) < 0) {
+	    warnx("invalid reply: %s", buf);
+	}
+	else /* XXX: verify remote user */
+	    send_file(fd, filename, filesize);
+    }
+    else if (strncmp("150 ", buf, 4) == 0)
+	warnx("remote unavailable");
+    else if (strncmp("151 ", buf, 4) == 0)
+	warnx("remote denied");
+    else
+	warnx("invalid reply: %s", buf);
+
+    (void)close(fd);
     return;
 }
 
 void
-usage(void)
+usage(const char *prg)
 {
 
     fprintf(stderr, "%s: send a file to a MIRC /dccserver\n\n"
@@ -305,12 +267,11 @@ main(int argc, char *argv[])
 
     strlcpy(nickname, "dccsend", sizeof(nickname));
     port = 59;
-    prg = argv[0];
 
     while ((c=getopt(argc, argv, "hn:p:r:v")) != -1) {
 	switch(c) {
 	case 'h':
-	    usage();
+	    usage(argv[0]);
 
 	case 'n':
 	    strlcpy(nickname, optarg, sizeof(nickname));
@@ -319,7 +280,7 @@ main(int argc, char *argv[])
 	case 'p':
 	    port = strtol(optarg, &endptr, 10);
 	    if (*optarg == '\0' || *endptr != '\0')
-		usage();
+		usage(argv[0]);
 	    if (port < 0 || port > 65535)
 		err(1, "invalid port argument (0 <= port < 65536)");
 	    break;

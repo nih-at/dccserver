@@ -1,3 +1,9 @@
+2003-05-22  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
+
+	* child.c (get_line_from_client): move from here...
+	* lib/dcc.c: ... to here
+	* lib/dcc.h: new file.
+
 2003-05-14  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
 
 	* child.c (get_line_from_client): restructure a bit for
