@@ -15,7 +15,3 @@ Possible changes
 dccsend:
 . verify remote nickname
 . handle timeouts
-
-Might want to fix:
-hppa11: dccserver.c: In function `main':
-dccserver.c:635: warning: passing arg 3 of `accept' from incompatible pointer type
