@@ -7,7 +7,7 @@ dccserver_SOURCES=dccserver.c
 
 DISTCLEANFILES=	dccserver.1
 
-EXTRA_DIST=	dccserver.man dccserver.mdoc README \
+EXTRA_DIST=	dccserver.man dccserver.mdoc \
 		debian/changelog debian/control debian/copyright debian/dirs \
 		debian/docs debian/rules \
 		err.c strlcpy.c warn.c warnx.c
