@@ -1,4 +1,4 @@
-/* $NiH: dccserver.c,v 1.9 2002/10/14 22:30:47 wiz Exp $ */
+/* $NiH: dccserver.c,v 1.10 2002/10/14 23:00:19 wiz Exp $ */
 #include <sys/socket.h>
 #include <sys/wait.h>
 #include <netinet/in.h>
@@ -253,18 +253,15 @@ converse_with_client(FILE *fp, state_t state, char *line)
 			p++;
 		    }
 		    p++;
-		}
-		if (*p == ',') {
-		    p++;
 		    /* bg */
-		    if ('0' <= *p && *p <= '9') {
-			if ('0' <= p[1] && p[1] <= '9') {
+		    if (*p == ',' && '0' <= p[1] && p[1] <='9') {
+			p+=2;
+			if ('0' <= *p && *p <= '9') {
 			    p++;
 			}
-			p++;
 		    }
 		}
-		break;
+		continue;
 
 	    case 0x02:
 		/* bold */
