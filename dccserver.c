@@ -1,4 +1,4 @@
-/* $NiH: dccserver.c,v 1.17 2002/10/15 13:53:08 wiz Exp $ */
+/* $NiH: dccserver.c,v 1.18 2002/10/15 14:28:47 wiz Exp $ */
 /*-
  * Copyright (c) 2002 Thomas Klausner.
  * All rights reserved.
@@ -47,8 +47,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#define PROGRAM "dccserver"
-#define VERSION "0.1"
+#include "config.h"
 
 #define BACKLOG 10
 
@@ -490,7 +489,7 @@ main(int argc, char *argv[])
 	    usage();
 
 	case 'v':
-	    printf(PROGRAM " " VERSION "\n");
+	    printf(PACKAGE_STRING "\n");
 	    exit(0);
 
 	case 'n':
