@@ -1,8 +1,11 @@
 2003-05-02  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
 
-	* Makefile.am (EXTRA_DIST): distribute README.Darwin.
-
 	* configure.ac: 0.3a test release.
+
+	* configure.ac: one of poll.h and sys/poll.h is enough; break if
+	poll.h is found.
+
+	* Makefile.am (EXTRA_DIST): distribute README.Darwin.
 
 	* README.Darwin: add instructions for Darwin.
 

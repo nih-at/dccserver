@@ -3,7 +3,7 @@ dnl Process this file with autoconf to produce a configure script.
 dnl init
 
 AC_PREREQ(2.57)
-AC_REVISION([$NiH: configure.ac,v 1.19 2003/05/02 16:39:41 wiz Exp $])
+AC_REVISION([$NiH: configure.ac,v 1.20 2003/05/02 16:45:57 wiz Exp $])
 AC_INIT([dccserver],[0.3a],[tk@giga.or.at])
 AC_CONFIG_SRCDIR([dccserver.c])
 AC_CONFIG_HEADERS([config.h])
@@ -15,7 +15,8 @@ AC_PROG_CC
 
 dnl header files
 
-AC_CHECK_HEADERS([err.h poll.h sys/poll.h])
+AC_CHECK_HEADERS(err.h)
+AC_CHECK_HEADERS([poll.h sys/poll.h], break)
 
 dnl libraries
 
