@@ -1,4 +1,4 @@
-/* $NiH: dccsend.c,v 1.4 2003/04/04 13:27:45 wiz Exp $ */
+/* $NiH: dccsend.c,v 1.5 2003/04/04 13:44:06 wiz Exp $ */
 /*-
  * Copyright (c) 2003 Thomas Klausner.
  * All rights reserved.
@@ -190,7 +190,7 @@ send_file(FILE *fp, char *filename, long filesize)
     (void)fclose(fin);
 
     if (rem <= 0) {
-	warnx("sending `%s' to %s complete: %ld/%ld bytes sent, %ld new)",
+	warnx("sending `%s' to %s complete: %ld/%ld bytes sent, %ld new",
 	      filename, remotenick, filesize-rem, filesize, filesize-rem-offset);
 	return 0;
     }
