@@ -1,6 +1,6 @@
 .\" Converted with mdoc2man 0.2
-.\" from NiH: dccserver.mdoc,v 1.3 2003/01/28 15:02:17 wiz Exp 
-.\" $NiH: dccserver.mdoc,v 1.3 2003/01/28 15:02:17 wiz Exp $
+.\" from NiH: dccserver.mdoc,v 1.4 2003/03/29 10:54:21 wiz Exp 
+.\" $NiH: dccserver.mdoc,v 1.4 2003/03/29 10:54:21 wiz Exp $
 .\"
 .\" Copyright (c) 2002, 2003 Thomas Klausner.
 .\" All rights reserved.
@@ -35,7 +35,7 @@
 dccserver \- simulate MIRC's /dccserver command
 .SH "SYNOPSIS"
 .B dccserver
-[\fB-hv\fR]
+[\fB-hiv\fR]
 [\fB-n\fR \fBnickname\fR]
 [\fB-p\fR \fBport\fR]
 .SH "DESCRIPTION"
@@ -53,6 +53,11 @@ Supported options:
 .TP 15
 \fB-h\fR
 Display a short help message.
+.TP 15
+\fB-i\fR
+Do not filter out control characters for color, bold, reverse, and
+underlined text.
+Useful if your terminal or wrapper can interpret them.
 .TP 15
 \fB-n\fR \fBnickname\fR
 Set nickname used in handshake to

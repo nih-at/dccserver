@@ -1,5 +1,7 @@
 2003-03-29  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
 
+	* dccserver.man: regen for -i
+
 	* dccserver.mdoc: document -i option
 
 	* dccserver.c (main): add option (-i) to not filter out control
