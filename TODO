@@ -1,4 +1,6 @@
-. SIGINFO -> SIGUSR1 for those who don't have it
+. SIGINFO doesn't work on HPUX - doesn't get caught? children don't get it.
+  additionally, second kills process
+. children don't die on HPUX
 . how to handle write_complete better?
 . global connection_closed flag?
 . split up in more files to make it easier to find something
