@@ -1,4 +1,4 @@
-/* $NiH: getaddrinfo.c,v 1.1 2003/04/04 13:44:06 wiz Exp $ */
+/* $NiH: getaddrinfo.c,v 1.2 2003/05/11 02:39:16 wiz Exp $ */
 /*-
  * getaddrinfo -- nodename-to-address translation in protocol-independent manner
  * Copyright (C) 2000, 2001 Dieter Baron.
@@ -62,7 +62,7 @@ getaddrinfo(const char *nodename, const char *servname,
     struct hostent *hp;
     struct sockaddr_in sa;
     struct servent *serv;
-    u_short port;
+    unsigned short port;
     char addr[4], *s_addr_list[2], **addr_list;
     int addr_len;
     int i;
@@ -82,7 +82,7 @@ getaddrinfo(const char *nodename, const char *servname,
 	port = htons(port);
     }
     else
-	port = (u_short)serv->s_port;
+	port = (unsigned short)serv->s_port;
 
     sa.sin_family = AF_INET;
     sa.sin_port = port;

@@ -1,5 +1,8 @@
 2003-05-13  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
 
+	* lib/getaddrinfo.c (getaddrinfo): use unsigned short instead of
+	less portable u_short.
+
 	* child.c (display_remote_line): fix signedness warnings from
 	Tru64.
 
