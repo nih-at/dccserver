@@ -1,4 +1,4 @@
-/* $NiH: child.c,v 1.16 2003/05/14 09:45:10 wiz Exp $ */
+/* $NiH: child.c,v 1.17 2003/05/14 12:37:25 wiz Exp $ */
 /*-
  * Copyright (c) 2003 Thomas Klausner.
  * All rights reserved.
@@ -482,6 +482,7 @@ parse_client_reply(int fd, int id, state_t state, char *line, struct transfer_st
     return ret;
 }
 
+/* get line from client and warn in error cases; return < 0 on problem */
 int
 get_line_from_client(int sock, int id, char *line, int linelen)
 {
