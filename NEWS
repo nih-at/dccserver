@@ -1,15 +1,12 @@
 0.4:
 
-	Add contrib/dccsend.pl from David Oftedal <david@start.no>
-	for xchat users.
-
 	Add "close" command; close particular connections.
-
-	Added proper timeout handling.
 
 	Add "info" command; shows current transfer states for all
 	connections. Sending dccserver a SIGINFO (or SIGUSR1 on
 	systems without SIGINFO) signal works too.
+
+	Added proper timeout handling.
 
 	Added poll replacement function from Brian M Clapper
 	for building on Darwin.
@@ -19,6 +16,11 @@
 	dccserver can now listen on multiple ports; just specify
 	-p multiple times.
 	Requested by Maik Zumstrull <Maik.Zumstrull@gmx.de>.
+
+	Fixed dccsend program to work with MIRC.
+
+	Add contrib/dccsend.pl from David Oftedal <david@start.no>
+	for xchat users.
 
 0.3:
 	Add dccsend program to send files to a remote dccserver.
