@@ -1,4 +1,4 @@
-/* $NiH: dccserver.c,v 1.6 2002/10/14 16:07:15 wiz Exp $ */
+/* $NiH: dccserver.c,v 1.7 2002/10/14 17:36:09 wiz Exp $ */
 #include <sys/socket.h>
 #include <sys/wait.h>
 #include <netinet/in.h>
@@ -127,6 +127,7 @@ parse_get_line(char *line)
     if (*q == '\0' || *endptr != '\0' || (filesize <=0))
 	return -1;
 
+    /* XXX: wrong */
     if ((q=strtok(NULL, " ")) == NULL)
 	return -1;
 
