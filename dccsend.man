@@ -1,6 +1,6 @@
 .\" Converted with mdoc2man 0.2
-.\" from NiH: dccsend.mdoc,v 1.5 2003/11/02 11:44:47 wiz Exp 
-.\" $NiH: dccsend.mdoc,v 1.5 2003/11/02 11:44:47 wiz Exp $
+.\" from NiH: dccsend.mdoc,v 1.6 2003/11/02 11:48:53 wiz Exp 
+.\" $NiH: dccsend.mdoc,v 1.6 2003/11/02 11:48:53 wiz Exp $
 .\"
 .\" Copyright (c) 2003 Thomas Klausner.
 .\" All rights reserved.
@@ -93,6 +93,8 @@ Typical usage:
 .Bd \-literal \-offset indent
 dccsend \-n yournick example.org /path/to/file
 .Ed
+.SH "SEE ALSO"
+dccserver(1)
 .SH "AUTHORS"
 .B dccsend
 was written by

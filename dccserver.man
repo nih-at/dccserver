@@ -1,6 +1,6 @@
 .\" Converted with mdoc2man 0.2
-.\" from NiH: dccserver.mdoc,v 1.19 2003/11/02 11:44:47 wiz Exp 
-.\" $NiH: dccserver.mdoc,v 1.19 2003/11/02 11:44:47 wiz Exp $
+.\" from NiH: dccserver.mdoc,v 1.20 2003/11/02 11:48:53 wiz Exp 
+.\" $NiH: dccserver.mdoc,v 1.20 2003/11/02 11:48:53 wiz Exp $
 .\"
 .\" Copyright (c) 2002, 2003 Thomas Klausner.
 .\" All rights reserved.
@@ -157,6 +157,8 @@ you could create the following alias (one line):
 and then open a new window with a dccserver inside with
 ``/dccserver 59''
 for port 59.
+.SH "SEE ALSO"
+dccsend(1)
 .SH "AUTHORS"
 .B dccserver
 was written by
