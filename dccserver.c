@@ -1,4 +1,4 @@
-/* $NiH: dccserver.c,v 1.10 2002/10/14 23:00:19 wiz Exp $ */
+/* $NiH: dccserver.c,v 1.11 2002/10/14 23:10:54 wiz Exp $ */
 #include <sys/socket.h>
 #include <sys/wait.h>
 #include <netinet/in.h>
@@ -43,7 +43,7 @@ child_t children[NO_OF_CHILDREN];
 #endif
 
 void
-say(char *line, FILE *fp)
+say(unsigned char *line, FILE *fp)
 {
     fwrite(line, strlen(line), 1, fp);
     return;
@@ -141,7 +141,7 @@ get_file(FILE *fp)
 }
     
 int
-parse_get_line(char *line)
+parse_get_line(unsigned char *line)
 {
     char *p, *q, *endptr;
 
@@ -182,10 +182,10 @@ sig_handle(int signal)
 }
 
 state_t
-converse_with_client(FILE *fp, state_t state, char *line)
+converse_with_client(FILE *fp, state_t state, unsigned char *line)
 {
     state_t ret;
-    char *p;
+    unsigned char *p;
 
     ret = state;
     switch(state) {
@@ -239,6 +239,11 @@ converse_with_client(FILE *fp, state_t state, char *line)
 	printf("<%s> ", partner);
 	p = line;
 	while (*p) {
+	    if (*p > 0x7f) {
+		putchar('.');
+		p++;
+		continue;
+	    }
 	    switch (*p) {
 	    case 0x03:
 		/* skip control-C */
@@ -307,8 +312,8 @@ void
 communicate_with_client(int sock)
 {
     FILE *fp;
-    char buf[8192];
-    char *p;
+    unsigned char buf[8192];
+    unsigned char *p;
     state_t state;
 
     state = ST_NONE;
