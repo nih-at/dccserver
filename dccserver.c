@@ -1,4 +1,4 @@
-/* $NiH: dccserver.c,v 1.3 2002/10/13 21:35:13 wiz Exp $ */
+/* $NiH: dccserver.c,v 1.4 2002/10/13 23:28:34 wiz Exp $ */
 #include <sys/socket.h>
 #include <sys/wait.h>
 #include <netinet/in.h>
@@ -78,20 +78,22 @@ converse_with_client(FILE *fp, state_t state, char *line)
     switch(state) {
     case ST_NONE:
 	if (strncmp("100 ", line, 4) == 0) {
+	    strlcpy(partner, line+4, sizeof(partner));
 	    tell_client(fp, 101, NULL);
+	    warnx("starting chat with %s", partner);
 	    ret = ST_CHAT;
-	    /* XXX */
-	    say("I don't feel like chatting right now.\n", fp);
-	    ret = ST_END;
 	}
 	else if (strncmp("110 ", line, 4) == 0) {
+	    strlcpy(partner, line+4, sizeof(partner));
 	    tell_client(fp, 111, NULL);
+	    warnx("starting fserve session with %s", partner);
 	    ret = ST_FSERVE;
-	    /* XXX */
-	    say("I don't feel like fserving right now.\n", fp);
-	    ret = ST_END;
 	}
 	else if (strncmp("120 ", line, 4) == 0) {
+	    if ((p=strchr(line, ' ')) != NULL) {
+		*p = '\0';
+	    }
+	    strlcpy(partner, line+4, sizeof(partner));
 	    tell_client(fp, 121, NULL);
 	    ret = ST_SEND;
 	    /* XXX */
@@ -121,6 +123,13 @@ converse_with_client(FILE *fp, state_t state, char *line)
     case ST_FSERVE:
     case ST_SEND:
     case ST_GET:
+	if (strcasecmp(line, "quit") == 0 ||
+	    strcasecmp(line, "exit") == 0) {
+	    say("Goodbye!", fp);
+	    ret = ST_END;
+	}
+	break;   
+
     case ST_END:
     default:
 	    tell_client(fp, 151, "not supported");
