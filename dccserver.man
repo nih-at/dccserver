@@ -1,6 +1,6 @@
 .\" Converted with mdoc2man 0.2
 .\" from NiH: dccserver.mdoc,v 1.15 2003/05/12 18:44:03 wiz Exp 
-.\" $NiH: dccserver.mdoc,v 1.15 2003/05/12 18:44:03 wiz Exp $
+.\" $NiH: dccserver.man,v 1.14 2003/05/12 18:52:53 wiz Exp $
 .\"
 .\" Copyright (c) 2002, 2003 Thomas Klausner.
 .\" All rights reserved.
@@ -160,7 +160,7 @@ for port 59.
 .SH "AUTHORS"
 .B dccserver
 was written by
-Thomas Klausner <tk@giga.or.at.>
+Thomas Klausner <wiz@danbala.tuwien.ac.at.>
 .SH "BUGS"
 Get and Fserve modes are not yet supported.
 .SH "SECURITY CONSIDERATIONS"

@@ -8,9 +8,9 @@ All connections are accepted; some simple checks on allowed file names
 are done.  For more details, please look in the man page.
 
 If you package this program, please reference either of
-	ftp.giga.or.at /pub/nih/dccserver/
-	http://ftp.giga.or.at/pub/nih/dccserver/
+	ftp.nih.at /pub/nih/dccserver/
+	http://www.nih.at/dccserver/
 as the master distribution site.
 
 Please send bug reports, comments, and praise to
-	Thomas Klausner <tk@giga.or.at>.
+	Thomas Klausner <wiz@danbala.tuwien.ac.at>

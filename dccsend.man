@@ -1,6 +1,6 @@
 .\" Converted with mdoc2man 0.2
 .\" from NiH: dccsend.mdoc,v 1.1 2003/04/07 12:11:48 wiz Exp 
-.\" $NiH: dccsend.mdoc,v 1.1 2003/04/07 12:11:48 wiz Exp $
+.\" $NiH: dccsend.man,v 1.1 2003/04/07 12:13:24 wiz Exp $
 .\"
 .\" Copyright (c) 2003 Thomas Klausner.
 .\" All rights reserved.
@@ -96,7 +96,7 @@ dccsend \-n yournick example.org /path/to/file
 .SH "AUTHORS"
 .B dccsend
 was written by
-Thomas Klausner <tk@giga.or.at.>
+Thomas Klausner <wiz@danbala.tuwien.ac.at.>
 .SH "BUGS"
 The
 \fB-r\fR
