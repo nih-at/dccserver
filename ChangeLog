@@ -1,3 +1,8 @@
+2003-04-03  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
+
+	* dccserver.mdoc: mention how to run dccserver in an irssi
+	window. From Rudolf Polzer.
+
 2003-04-02  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
 
 	* dccserver.c (parse_get_line): use strip_path to remove path

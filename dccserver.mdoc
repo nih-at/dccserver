@@ -1,4 +1,4 @@
-.\" $NiH: dccserver.mdoc,v 1.4 2003/03/29 10:54:21 wiz Exp $
+.\" $NiH: dccserver.mdoc,v 1.5 2003/03/29 11:16:22 wiz Exp $
 .\"
 .\" Copyright (c) 2002, 2003 Thomas Klausner.
 .\" All rights reserved.
@@ -103,6 +103,26 @@ and the space are necessary.
 .Pp
 Text coming from the remote clients will be shown prepended by their
 nickname.
+.Sh EXAMPLES
+Typical usage:
+.Bd -literal -offset indent
+dccserver -n yournick -p 59
+.Ed
+.Pp
+With
+.Xr irssi 1 ,
+you could create the following alias (one line):
+.Bd -literal -offset indent
+/alias DCCSERVER
+ window new hidden;
+ window name dccserver$0;
+ echo dccserver for $N on port $0;
+ exec -name dccserver$0 -nosh -interactive -window dccserver -n $N -p $0 -i -e
+.Ed
+.Pp
+and then open a new window with a dccserver inside with
+.Dq /dccserver 59
+for port 59.
 .Sh AUTHORS
 .Nm
 was written by
