@@ -1,5 +1,13 @@
 2003-04-03  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
 
+	* dccserver.c (main): add minimal port verification.
+
+	* dccserver.c (get_file, display_remote_line)
+	(converse_with_client, communicate_with_client): sprinkle child
+	IDs in more output messages. Mostly from Rudolf Polzer.
+
+	* dccserver.c (get_file): correct output of new bytes in one case.
+
 	* dccserver.mdoc: mention how to run dccserver in an irssi
 	window. From Rudolf Polzer.
 	* dccserver.man: regen.

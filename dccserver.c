@@ -1,4 +1,4 @@
-/* $NiH: dccserver.c,v 1.34 2003/04/02 09:25:45 wiz Exp $ */
+/* $NiH: dccserver.c,v 1.35 2003/04/02 12:42:04 wiz Exp $ */
 /*-
  * Copyright (c) 2002, 2003 Thomas Klausner.
  * All rights reserved.
@@ -122,7 +122,7 @@ tell_client(FILE *fp, int retcode, char *fmt, ...)
 
 /* get and save file from network */
 int
-get_file(FILE *fp)
+get_file(int id, FILE *fp)
 {
     char buf[8192];
     int len;
@@ -187,13 +187,13 @@ get_file(FILE *fp)
 	warn("close error for `%s'", filename);
 
     if (rem <= 0) {
-	warnx("`%s' complete (%ld/%ld bytes got, %ld new)", filename,
-	      filesize-rem, filesize, filesize-offset);
+	warnx("`%s' from %d: %s complete (%ld/%ld bytes got, %ld new)", filename,
+	      id, partner, filesize-rem, filesize, filesize-rem-offset);
 	return 0;
     }
     else {
-	warnx("client closed connection for `%s' (%ld/%ld bytes got, "
-	      "%ld new)", filename, filesize-rem, filesize,
+	warnx("client %d: %s closed connection for `%s' (%ld/%ld bytes got, "
+	      "%ld new)", filename, id, partner, filesize-rem, filesize,
 	      filesize-offset-rem);
     }    
 
@@ -246,9 +246,9 @@ parse_get_line(char *line)
 /* display line given from remote; filter out some characters */
 /* assumes ASCII text */
 void
-display_remote_line(const unsigned char *p)
+display_remote_line(int id, const unsigned char *p)
 {
-    printf("<%s> ", partner);
+    printf("<%d: %s> ", id, partner);
     while (*p) {
 	if (*p > 0x7f) {
 	    putchar('.');
@@ -321,7 +321,7 @@ sig_handle(int signal)
 
 /* parse line from client, update state machine, and reply */
 state_t
-converse_with_client(FILE *fp, state_t state, char *line)
+converse_with_client(FILE *fp, state_t state, char *line, int id)
 {
     state_t ret;
     unsigned char *p;
@@ -332,14 +332,14 @@ converse_with_client(FILE *fp, state_t state, char *line)
 	if (strncmp("100 ", line, 4) == 0) {
 	    strlcpy(partner, line+4, sizeof(partner));
 	    tell_client(fp, 101, NULL);
-	    warnx("starting chat with %s", partner);
+	    warnx("starting chat with %d: %s", id, partner);
 	    ret = ST_CHAT;
 	}
 	else if (strncmp("110 ", line, 4) == 0) {
 	    strlcpy(partner, line+4, sizeof(partner));
 #ifdef NOT_YET
 	    tell_client(fp, 111, NULL);
-	    warnx("starting fserve session with %s", partner);
+	    warnx("starting fserve session with %d: %s", id, partner);
 	    ret = ST_FSERVE;
 #endif
 	    tell_client(fp, 151, NULL);
@@ -353,10 +353,10 @@ converse_with_client(FILE *fp, state_t state, char *line)
 		break;
 	    }
 
-	    warnx("getting file `%s' (%ld bytes) from %s", filename,
-		  filesize, partner);
+	    warnx("getting file `%s' (%ld bytes) from %d: %s", filename,
+		  filesize, id, partner);
 
-	    get_file(fp);
+	    get_file(id, fp);
 	    ret = ST_END;
 	}
 	else if (strncmp("130 ", line, 4) == 0) {
@@ -375,7 +375,7 @@ converse_with_client(FILE *fp, state_t state, char *line)
 	break;
 
     case ST_CHAT:
-	display_remote_line(line);
+	display_remote_line(id, line);
 	break;
 
     case ST_FSERVE:
@@ -400,7 +400,7 @@ converse_with_client(FILE *fp, state_t state, char *line)
 
 /* main child routine: read line from client and call parser */
 void
-communicate_with_client(int sock)
+communicate_with_client(int sock, int id)
 {
     FILE *fp;
     char buf[8192];
@@ -424,11 +424,11 @@ communicate_with_client(int sock)
 	    state = ST_END;
 	    continue;
 	}
-	state = converse_with_client(fp, state, buf);
+	state = converse_with_client(fp, state, buf, id);
     }
 
     if (state != ST_END)
-	warnx("closing connection with %s", partner);
+	warnx("closing connection with %d: %s", id, partner);
 
     (void)fclose(fp);
     exit(0);
@@ -444,10 +444,22 @@ handle_connection(int sock, int oldsock)
     pid_t child;
     int i;
 
+    /* find first free child ID */
+    for (i=0; i<NO_OF_CHILDREN; i++)
+	if (children[i].pid == -1)
+	    break;
+
+    /* none found */
+    if (i >= NO_OF_CHILDREN) {
+	warnx("too many children");
+	close(sock);
+	return;
+    }
+
     switch(child=fork()) {
     case 0:
 	close(oldsock);
-	communicate_with_client(sock);
+	communicate_with_client(sock, i);
 	/* UNREACHABLE */
 	_exit(1);
 
@@ -459,17 +471,10 @@ handle_connection(int sock, int oldsock)
 	break;
     }
 
-    for (i=0; i<NO_OF_CHILDREN; i++) {
-	if (children[i].pid == -1) {
-	    children[i].pid = child;
-	    children[i].sock = sock;
-	    warnx("child %d started (pid %d)", i, child);
-	    return;
-	}
-    }
+    children[i].pid = child;
+    children[i].sock = sock;
+    warnx("child %d started (pid %d)", i, child);
 
-    warnx("too many children");
-    close(sock);
     return;
 }
 
@@ -578,6 +583,8 @@ main(int argc, char *argv[])
 	    port = strtol(optarg, &endptr, 10);
 	    if (*optarg == '\0' || *endptr != '\0')
 		usage();
+	    if (port < 0 || port > 65535)
+		err(1, "invalid port argument (0 <= port < 65536)");
 
 	    break;
 
