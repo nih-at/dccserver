@@ -1,4 +1,4 @@
-/* $NiH: dccserver.c,v 1.51 2003/05/05 21:05:53 wiz Exp $ */
+/* $NiH: dccserver.c,v 1.52 2003/05/06 21:39:54 wiz Exp $ */
 /*-
  * Copyright (c) 2002, 2003 Thomas Klausner.
  * All rights reserved.
@@ -83,7 +83,7 @@ void warnx(const char *, ...);
 #define BACKLOG 10
 
 typedef enum state_e { ST_NONE, ST_CHAT, ST_FSERVE, ST_SEND, ST_GET,
-		       ST_END } state_t;
+		       ST_GETFILE, ST_END } state_t;
 
 static int echo_input;
 static char filename[1024];
