@@ -1,4 +1,4 @@
-/* $NiH: dccserver.c,v 1.11 2002/10/14 23:10:54 wiz Exp $ */
+/* $NiH: dccserver.c,v 1.12 2002/10/14 23:21:44 wiz Exp $ */
 #include <sys/socket.h>
 #include <sys/wait.h>
 #include <netinet/in.h>
@@ -110,6 +110,7 @@ get_file(FILE *fp)
 
     tell_client(fp, 121, "%ld", offset);
 
+    /* get file data into local file */
     rem = filesize - offset;
     while((len=fread(buf, 1, MIN(rem, sizeof(buf)), fp)) > 0) {
 	if (write(out, buf, len) < len) {
@@ -139,27 +140,28 @@ get_file(FILE *fp)
 
     return -1;
 }
-    
+
+/* parse line given by remote client */
 int
 parse_get_line(unsigned char *line)
 {
     char *p, *q, *endptr;
 
-    if ((p=strtok(line+4, " ")) == NULL)
+    if ((p=strchr(line+4, ' ')) == NULL)
 	return -1;
-
+    *p = '\0';
     strlcpy(partner, line+4, sizeof(partner));
-    if ((q=strtok(NULL, " ")) == NULL)
+
+    q = p+1;
+    if ((p=strchr(q, ' ')) == NULL)
 	return -1;
+    *p = '\0';
 
     filesize = strtol(q, &endptr, 10);
     if (*q == '\0' || *endptr != '\0' || (filesize <=0))
 	return -1;
 
-    /* XXX: wrong */
-    if ((q=strtok(NULL, " ")) == NULL)
-	return -1;
-
+    q = p+1;
     strlcpy(filename, q, sizeof(filename));
     if ((strlen(filename) == 0) || (strchr(filename, '/') != NULL))
 	return -1;
