@@ -2,7 +2,7 @@ bin_PROGRAMS=dccserver dccsend
 man_MANS=dccserver.1 dccsend.1
 
 LDADD=		lib/libdcc.a
-AM_CPPFLAGS=	-Ilib
+AM_CPPFLAGS=	-I${top_srcdir}/lib
 
 dccserver_SOURCES=dccserver.c child.c
 dccsend_SOURCES=dccsend.c
