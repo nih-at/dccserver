@@ -1,3 +1,8 @@
+2003-10-28  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
+
+	* dccsend.c (main_loop): if remotenick has not been specified,
+	fill in the variable with the nick remote sent.
+
 2003-10-26  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
 
 	* child.c (read_file): close connection when exactly the expected

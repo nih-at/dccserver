@@ -1,4 +1,4 @@
-/* $NiH: dccsend.c,v 1.18 2003/08/04 17:05:55 wiz Exp $ */
+/* $NiH: dccsend.c,v 1.19 2003/10/26 10:10:13 wiz Exp $ */
 /*-
  * Copyright (c) 2003 Thomas Klausner.
  * All rights reserved.
@@ -211,13 +211,18 @@ main_loop(int sock, char *filename, size_t filesize)
 	    else {
 		switch (parse_reply(line, nick, sizeof(nick), &arg2, &arg3)) {
 		case 121:
-		    if (*remotenick && strcmp(remotenick, nick) != 0) {
-			warnx("remote nick `%s' does not match specified nick "
-			      "`%s', aborting", nick, remotenick);
-			tell_client(sock, 151, NULL);
-			state = ST_END;
-			break;
+		    if (*remotenick) {
+			if (strcmp(remotenick, nick) != 0) {
+			    warnx("remote nick `%s' does not match "
+				  "specified nick `%s', aborting",
+				  nick, remotenick);
+			    tell_client(sock, 151, NULL);
+			    state = ST_END;
+			    break;
+			}
 		    }
+		    else
+			strlcpy(remotenick, nick, sizeof(remotenick));
 		    offset = strtol(arg2, &endptr, 10);
 		    if (*arg2 == '\0' || *endptr != '\0' || (offset < 0)) {
 			tell_client(sock, 151, NULL);
