@@ -9,6 +9,7 @@
 . some commands to dccserver:
   . show open connections (to who, type, time, transferred data)
   . close specific connections
+. add option to create per-remote download dirs
 . bind to specific IP only?
 . disallow particular clients?
 . readline?
