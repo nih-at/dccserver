@@ -1,3 +1,9 @@
+2003-04-01  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
+
+	* dccserver.c (main): remove seteuid call, it was
+	unnecessary. Noted by Athanasius.
+	* configure.ac: do not check for seteuid.
+
 2003-03-29  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
 
 	* dccserver.mdoc: document -e.

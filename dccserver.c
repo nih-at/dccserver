@@ -1,4 +1,4 @@
-/* $NiH: dccserver.c,v 1.32 2003/03/29 11:05:12 wiz Exp $ */
+/* $NiH: dccserver.c,v 1.33 2003/03/29 11:16:22 wiz Exp $ */
 /*-
  * Copyright (c) 2002, 2003 Thomas Klausner.
  * All rights reserved.
@@ -599,9 +599,6 @@ main(int argc, char *argv[])
     }
 
     /* drop privileges */
-#ifdef HAVE_SETEUID
-    seteuid(getuid());
-#endif
     setuid(getuid());
 
     if (listen(sock, BACKLOG) == -1)
