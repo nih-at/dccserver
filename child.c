@@ -1,4 +1,4 @@
-/* $NiH: io.c,v 1.3 2003/05/10 21:58:46 wiz Exp $ */
+/* $NiH: io.c,v 1.4 2003/05/10 22:58:03 wiz Exp $ */
 /*-
  * Copyright (c) 2003 Thomas Klausner.
  * All rights reserved.
@@ -62,6 +62,7 @@ struct transfer_state {
     long offset;
     long rem;
     struct timeval starttime;
+    struct timeval lastdata;
 };
 
 /* XXX: duplicate */
@@ -71,6 +72,7 @@ extern char nickname[];
 char partner[100];
 extern void display_remote_line(int, const unsigned char *);
 extern char *strip_path(char *);
+extern volatile int siginfo;
 
 /* maximum line length accepted from remote */
 #define BUFSIZE 4096
@@ -86,14 +88,13 @@ extern char *strip_path(char *);
 #define DIRECTION_WRITE 2
 
 /* timeout values, ms */
-#define CHAT_TIMEOUT		 150000
-#define TRANSFER_TIMEOUT	1200000
-
+#define CHAT_TIMEOUT		 15000
+#define TRANSFER_TIMEOUT	120000
+#define MIN_TIMEOUT		   300
 
 int
 data_available(int fd, int direction, int timeout)
 {
-    int pollret;
     struct pollfd pollset[1];
 
     pollset[0].fd = fd;
@@ -104,12 +105,7 @@ data_available(int fd, int direction, int timeout)
 	pollset[0].events |= POLLOUT;
     pollset[0].revents = 0;
 
-    if ((pollret=poll(pollset, 1, timeout)) == -1) {
-	if (errno != EINTR)
-	    warn("poll error");
-    }
-
-    return pollret;
+    return poll(pollset, 1, timeout);
 }
 
 /* read some characters */
@@ -136,7 +132,9 @@ write_complete(int fd, int timeout, char *buf)
     while (len > 0) {
 	switch (data_available(fd, DIRECTION_WRITE, timeout)) {
 	case -1:
-	    /* error */
+	    /* ignore interrupts here */
+	    if (errno == EINTR)
+		continue;
 	    return -1;
 	case 0:
 	    /* timeout */
@@ -284,8 +282,24 @@ setup_read_file(int fd, char *filename, long filesize)
     tell_client(fd, 121, "%ld", offset);
 
     gettimeofday(&(ts->starttime), NULL);
+    ts->lastdata = ts->starttime;
 
     return ts;
+}
+
+long
+timevaldiff(struct timeval *before, struct timeval *after)
+{
+    int sec, usec;
+
+    usec = after->tv_usec - before->tv_usec;
+    sec = after->tv_sec - before->tv_sec;
+    if (before->tv_usec > after->tv_usec) {
+	usec += 1000000;
+	sec--;
+    }
+
+    return (long)sec * 1000 + ((long)usec + 500)/1000;
 }
 
 int
@@ -293,13 +307,18 @@ read_file(struct transfer_state *ts)
 {
     char buf[8192];
     int len;
+    int timeout;
+    struct timeval now;
 
-    switch (data_available(ts->infd, DIRECTION_READ, TRANSFER_TIMEOUT)) {
+    gettimeofday(&now, NULL);
+
+    timeout = TRANSFER_TIMEOUT - timevaldiff(&(ts->lastdata), &now);
+    if (timeout <= 0)
+	timeout = MIN_TIMEOUT;
+    switch (data_available(ts->infd, DIRECTION_READ, timeout)) {
     case -1:
-	warn("poll error");
 	return -1;
     case 0:
-	warn("transfer timeout");
 	return -2;
     default:
 	break;
@@ -317,51 +336,55 @@ read_file(struct transfer_state *ts)
 	    warnx("getting more than %ld bytes for `%s'",
 		  ts->filesize, ts->filename);
 	}
+	gettimeofday(&(ts->lastdata), NULL);
     }
 
     return len;
 }
 
-
-int
-cleanup_read_file(struct transfer_state *ts, int id)
+void
+display_transfer_statistics(struct transfer_state *ts, int id)
 {
-    long time_divisor;
     double transfer_rate;
+    double size_percent;
+    long time_divisor;
     struct timeval after;
 
     gettimeofday(&after, NULL);
 
-    if (close(ts->outfd) == -1)
-	warn("close error for `%s'", ts->filename);
-
-    if (ts->starttime.tv_usec > after.tv_usec) {
-	after.tv_usec += 1000000;
-	after.tv_sec--;
-    }
-    after.tv_usec -= ts->starttime.tv_usec;
-    after.tv_sec -= ts->starttime.tv_sec;
-
-    time_divisor = (after.tv_sec*1000+(after.tv_usec+500)/1000);
+    time_divisor = timevaldiff(&(ts->starttime), &after);
     /* avoid division by zero in _very_ fast (or small) transfers */
     if (time_divisor == 0)
 	time_divisor = 1;
     transfer_rate = (((double)(ts->filesize-ts->rem-ts->offset))/1024*1000)/time_divisor;
+
+    if (ts->filesize > 0)
+	size_percent = ((double)(ts->filesize-ts->rem))/ts->filesize*100;
+    else
+	size_percent = 0.0;
+
+    warnx("child %d: %s sending `%s' (%ld of %ld bytes (%.1f%%), %ld new)",
+	  id, partner, ts->filename, ts->filesize - ts->rem, ts->filesize,
+	  size_percent, ts->filesize - ts->rem - ts->offset);
+    warnx("child %d: time %ld.%ld seconds, transfer rate %.1fKb/s", id,
+	  time_divisor/1000, ((time_divisor + 50) / 100) % 10, transfer_rate);
+
+    return;
+}
+
+int
+cleanup_read_file(struct transfer_state *ts, int id)
+{
+
+    display_transfer_statistics(ts, id);
+
+    if (close(ts->outfd) == -1)
+	warn("close error for `%s'", ts->filename);
+
     if (ts->rem <= 0) {
-	warnx("child %d: client %s completed sending `%s' (%ld/%ld bytes got, %ld new)",
-	      id, partner, ts->filename, ts->filesize - ts->rem, ts->filesize,
-	      ts->filesize - ts->rem - ts->offset);
-	warnx("child %d: time %ld.%ld seconds, transfer rate %.1fKb/s", id,
-	      after.tv_sec, (after.tv_usec+50000)/100000, transfer_rate);
+	warnx("child %d: transfer complete", id);
 	return 0;
     }
-    else {
-	warnx("child %d: client %s closed connection for `%s' (%ld/%ld bytes got, "
-	      "%ld new)", id, partner, ts->filename, ts->filesize - ts->rem, ts->filesize,
-	      ts->filesize - ts->rem - ts->offset);
-	warnx("child %d: time %ld.%ld seconds, transfer rate %.1fKb/s", id,
-	      after.tv_sec, (after.tv_usec+50000)/100000, transfer_rate);
-    }    
 
     return -1;
 
@@ -397,7 +420,6 @@ fdgets(int fd, char *buf, int bufsize)
     while (((ret=find_nl(intbuf)) <= 0) && (intbuffill < bufsize)) {
 	switch (data_available(fd, DIRECTION_READ, CHAT_TIMEOUT)) {
 	case -1:
-	    /* error */
 	    return -1;
 	case 0:
 	    /* timeout */
@@ -438,14 +460,14 @@ parse_client_reply(int fd, int id, state_t state, char *line, void **arg)
 	if (strncmp("100 ", line, 4) == 0) {
 	    strlcpy(partner, line+4, sizeof(partner));
 	    tell_client(fd, 101, NULL);
-	    warnx("starting chat with %d: %s", id, partner);
+	    warnx("child %d: %s wants to chat", id, partner);
 	    ret = ST_CHAT;
 	}
 	else if (strncmp("110 ", line, 4) == 0) {
 	    strlcpy(partner, line+4, sizeof(partner));
 #ifdef NOT_YET
 	    tell_client(fd, 111, NULL);
-	    warnx("starting fserve session with %d: %s", id, partner);
+	    warnx("child %d: %s using fserve", id, partner);
 	    ret = ST_FSERVE;
 #endif
 	    tell_client(fd, 151, NULL);
@@ -462,7 +484,7 @@ parse_client_reply(int fd, int id, state_t state, char *line, void **arg)
 		break;
 	    }
 
-	    warnx("%d: %s offers `%s' (%ld bytes)", id, partner,
+	    warnx("child %d: %s offers `%s' (%ld bytes)", id, partner,
 		  filename, filesize);
 	    fflush(stderr);
 	    ret = ST_GETFILE;
@@ -528,8 +550,9 @@ get_line_from_client(int sock, int id, state_t state, void **arg)
 	ret = ST_END;
 	break;
     case -1:
-	if (++errcount > MAX_ERRORS) {
-	    warnx("%d errors in a row -- closing connection", MAX_ERRORS);
+	if (errno != EINTR && ++errcount > MAX_ERRORS) {
+	    warnx("child %d: %s: %d errors in a row -- closing connection", id,
+		  partner, MAX_ERRORS);
 	    ret = ST_END;
 	}
 	break;
@@ -552,6 +575,7 @@ child_loop(int sock, int id)
 {
     state_t state;
     void *arg;
+    int ret;
 
     state = ST_NONE;
 
@@ -562,16 +586,25 @@ child_loop(int sock, int id)
 	    break;
 
 	case ST_GETFILE:
-	    if (read_file((struct transfer_state *)arg) <= 0)
-		state = ST_END;
-	    if (state != ST_GETFILE)
+	    if (siginfo) {
+		siginfo = 0;
+		display_transfer_statistics((struct transfer_state *)arg, id);
+	    }
+	    if ((ret=read_file((struct transfer_state *)arg)) <= 0) {
+		if (ret == -1 && errno == EINTR)
+		    continue;
+		else if (ret == -2)
+		    warnx("child %d: %s transfer timed out", id, partner);
 		cleanup_read_file((struct transfer_state *)arg, id);
+		state = ST_END;
+	    }
 	    break;
 
 	default:
 	    tell_client(sock, 151, NULL);
 	    break;
 	}
+
     }
 
     close(sock);
