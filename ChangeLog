@@ -1,3 +1,8 @@
+2003-01-23  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
+
+	* config.guess: update to 2003-01-10, prompted by Aubin Paul.
+	* config.sub: update to 2003-01-22, prompted by Aubin Paul.
+
 2003-01-22  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
 
 	* configure.ac: Bump version to 0.2.
@@ -47,5 +52,5 @@
 2002-10-17  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
 
 	* Makefile.am, NEWS, debian/*: add Debian package support provided
-	by Aubin Paul <aubin@punknews.org>.
+	by Aubin Paul <debian@outlyer.org>.
 
