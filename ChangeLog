@@ -5,6 +5,7 @@
 
 	* dccserver.mdoc: document that listening on multiple ports works
 	now.
+	* dccserver.man: regen.
 
 	* dccserver.c (main): do chroot after option parsing, should be
 	early enough and avoid an error message in case of -h or -v.
