@@ -1,0 +1,73 @@
+ 135.Added mIRC DCC Server, listens by default on port 59 for special
+     mIRC DCC connections. To turn the dcc server on/off you can use
+     the command:
+
+     /dccserver [+|-scf] [on|off] [port]
+
+     You can send/chat/fserve the dcc server using the DCC Send/Chat
+     dialogs and specifying an IP address instead of a nickname (you
+     can also specify both a nickname and IP address, mIRC will use
+     the ip address to connect).
+
+     From the command line, you can use /dcc [send|chat|fserve] with an
+     IP Address instead of a nickname to initiate a connection to the
+     DCC Server. Note: /dcc fserve only works for IP connections and
+     does not work via IRC.
+
+     Chat Protocol
+       Client connects to Server and sends:
+       100 clientnickname
+       When Server receives this, it sends:
+       101 servernickname
+       Connection is established, users can now chat.
+
+     Fserve Protocol
+       Client connects to Server and sends:
+       110 clientnickname
+       When Server receives this, it sends:
+       111 servernickname
+       Connection is established, user can now access fserve.
+
+     Send Protocol
+       Client connects to Server and sends:
+       120 clientnickname filesize filename
+       When Server receives this, it sends:
+       121 servernickname resumeposition
+       Where resumeposition is between 0 and filesize, and is required.
+       Connection is established, and Server dcc gets the file.
+
+     Get Protocol
+       Client connects to Server and sends:
+       130 clientnickname filename
+       When Server receives this, it sends:
+       131 servernickname filesize
+       When Client receives this, it sends:
+       132 clientnickname resumeposition
+       Where resumeposition is between 0 and filesize, and is required.
+       Connection is established, and Server dcc sends the file.
+
+       Notes:
+       a) The Get protocol has been implemented in this way mainly
+          because I'm assuming:
+          1) The client may not be able to open a socket to listen
+             for and accept a connection (firewall etc.)
+          2) The DCC Server may only be able to listen for connections
+             on port 59 (firewall etc.)
+          3) Since the client was able to connect to the DCC Server the
+             first time, it should have no problem connecting to the
+             same port again.
+
+       b) Currently the Get Protocol is ONLY used by the Fileserver when
+          a user (who has connected to a Fileserver via the DCC Server)
+          requests a "get filename". All other attempts to Get a file via
+          the DCC Server are ignored.
+
+     If server receives unexpected information, or doesn't recieve info
+     15 seconds after initial connection, it closes the connection.
+
+     If service is unavailable, server sends:
+     150 servernickname
+
+     If server rejects connection, it sends:
+     151 servernickname
+
