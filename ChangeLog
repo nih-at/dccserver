@@ -1,5 +1,8 @@
 2003-05-11  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
 
+	* dccserver.c (main): use sigaction instead of signal, for better
+	portability.
+
 	* child.c: rewrite to not use stdio, to get sane timeout handling.
 
 	* dccserver.h: new header file for common definitions.

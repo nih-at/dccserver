@@ -1,4 +1,4 @@
-/* $NiH: dccserver.c,v 1.58 2003/05/11 02:06:01 wiz Exp $ */
+/* $NiH: dccserver.c,v 1.59 2003/05/11 02:40:13 wiz Exp $ */
 /*-
  * Copyright (c) 2002, 2003 Thomas Klausner.
  * All rights reserved.
@@ -286,6 +286,7 @@ main(int argc, char *argv[])
     int pollret;
     int port, port_count;
     struct pollfd *pollset;
+    struct sigaction sa;
 
     strlcpy(nickname, "dccserver", sizeof(nickname));
     /* do not echo lines entered by default */
@@ -365,8 +366,12 @@ main(int argc, char *argv[])
 
     for (c=0; c<NO_OF_CHILDREN; c++)
 	children[c].pid = -1;
-    signal(SIGCHLD, sig_handle);
-    signal(SIGINFO, sig_handle);
+
+    sa.sa_handler = sig_handle;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = 0;
+    sigaction(SIGCHLD, &sa, NULL);
+    sigaction(SIGINFO, &sa, NULL);
 
     /* one for stdin, one for each listening socket */
     if ((pollset=malloc(sizeof(*pollset)*(port_count+1))) == NULL)
