@@ -1,5 +1,7 @@
 2003-05-02  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
 
+	* Makefile.am (EXTRA_DIST): distribute README.Darwin.
+
 	* configure.ac: 0.3a test release.
 
 	* README.Darwin: add instructions for Darwin.
