@@ -1,10 +1,9 @@
-. handle partly-filled buffer in fdgets
+. SIGINFO -> SIGUSR1 for those who don't have it
 . how to handle write_complete better?
 . global connection_closed flag?
 . split up in more files to make it easier to find something
 
 Planned changes
-. timeouts
 . don't send data to 'Send' connections -- they quit in this case
 . download speed indicator during download
 . some commands to dccserver:
