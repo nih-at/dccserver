@@ -1,3 +1,4 @@
 . make get work
 . make fserve work
+. make it easier to find out which child does what
 . timeouts
