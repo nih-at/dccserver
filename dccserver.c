@@ -1,4 +1,4 @@
-/* $NiH: dccserver.c,v 1.14 2002/10/14 23:48:11 wiz Exp $ */
+/* $NiH: dccserver.c,v 1.15 2002/10/15 12:02:08 wiz Exp $ */
 /*-
  * Copyright (c) 2002 Thomas Klausner.
  * All rights reserved.
@@ -78,6 +78,7 @@ void
 say(unsigned char *line, FILE *fp)
 {
     fwrite(line, strlen(line), 1, fp);
+    fflush(fp);
     return;
 }
 
@@ -94,6 +95,7 @@ tell_client(FILE *fp, int retcode, char *fmt, ...)
 	va_end(ap);
     }
     fprintf(fp, "\n");
+    fflush(fp);
 
     return;
 }
@@ -377,7 +379,7 @@ communicate_with_client(int sock)
     if (state != ST_END)
 	warnx("closing connection with %s", partner);
 
-    fclose(fp);
+    (void)fclose(fp);
     exit(0);
 }
 
@@ -386,13 +388,14 @@ communicate_with_client(int sock)
  * children
  */
 void
-handle_connection(int sock)
+handle_connection(int sock, int oldsock)
 {
     pid_t child;
     int i;
 
     switch(child=fork()) {
     case 0:
+	close(oldsock);
 	communicate_with_client(sock);
 	/* UNREACHABLE */
 	_exit(1);
@@ -598,7 +601,7 @@ main(int argc, char *argv[])
 			 inet_ntoa(raddr.sin_addr), ntohs(raddr.sin_port));
 
 	    /* do something */
-	    handle_connection(new_sock);
+	    handle_connection(new_sock, sock);
 	}
     }
 
