@@ -3,8 +3,8 @@
 # init
 
 AC_PREREQ(2.57)
-AC_REVISION([$NiH: configure.ac,v 1.26 2003/05/14 08:22:41 wiz Exp $])
-AC_INIT([dccserver],[0.3b],[wiz@danbala.tuwien.ac.at])
+AC_REVISION([$NiH: configure.ac,v 1.27 2003/09/08 09:51:31 wiz Exp $])
+AC_INIT([dccserver],[0.4],[wiz@danbala.tuwien.ac.at])
 AC_CONFIG_SRCDIR([dccserver.c])
 AC_CONFIG_HEADERS([config.h])
 AM_INIT_AUTOMAKE
