@@ -1,6 +1,7 @@
 dccserver comes under the three-clause BSD license.
 
-dccserver.c, and the three replacement functions err.c, warn.c, warnx.c:
+dccserver.c, and the four replacement functions err.c, errx.c, warn.c,
+and warnx.c:
 /*-
  * Copyright (c) 2002, 2003 Thomas Klausner.
  * All rights reserved.

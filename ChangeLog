@@ -9,6 +9,7 @@
 
 	* configure.ac: use errx if needed.
 	* errx.c (errx): new file.
+	* COPYING: mention errx.c.
 
 	* warnx.c (warnx): use fputs instead of fprintf.
 
