@@ -1,3 +1,4 @@
+. accept multiple port arguments, and listen on all of them
 . make get work
 . make fserve work
 . make it easier to find out which child does what
@@ -8,5 +9,6 @@
 . some commands to dccserver:
   . show open connections (to who, type, time, transferred data)
   . close specific connections
+. bind to specific IP only?
 . disallow particular clients?
 . readline?
