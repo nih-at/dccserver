@@ -1,6 +1,6 @@
 .\" Converted with mdoc2man 0.2
-.\" from NiH: dccserver.mdoc,v 1.5 2003/03/29 11:16:22 wiz Exp 
-.\" $NiH: dccserver.mdoc,v 1.5 2003/03/29 11:16:22 wiz Exp $
+.\" from NiH: dccserver.mdoc,v 1.7 2003/04/03 09:31:51 wiz Exp 
+.\" $NiH: dccserver.mdoc,v 1.7 2003/04/03 09:31:51 wiz Exp $
 .\"
 .\" Copyright (c) 2002, 2003 Thomas Klausner.
 .\" All rights reserved.
@@ -108,6 +108,28 @@ and the space are necessary.
 .PP
 Text coming from the remote clients will be shown prepended by their
 nickname.
+.SH "EXAMPLES"
+Typical usage:
+.PP
+.Bd \-literal \-offset indent
+dccserver \-n yournick \-p 59
+.Ed
+.PP
+With
+irssi(1),
+you could create the following alias (one line):
+.PP
+.Bd \-literal \-offset indent
+/alias DCCSERVER
+ window new hidden;
+ window name dccserver$0;
+ echo dccserver for $N on port $0;
+ exec \-name dccserver$0 \-nosh \-interactive \-window dccserver \-n $N \-p $0 \-i \-e
+.Ed
+.PP
+and then open a new window with a dccserver inside with
+``/dccserver 59''
+for port 59.
 .SH "AUTHORS"
 .B dccserver
 was written by

@@ -2,6 +2,7 @@
 
 	* dccserver.mdoc: mention how to run dccserver in an irssi
 	window. From Rudolf Polzer.
+	* dccserver.man: regen.
 
 2003-04-02  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
 
