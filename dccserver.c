@@ -1,4 +1,4 @@
-/* $NiH: dccserver.c,v 1.19 2002/10/15 17:48:47 wiz Exp $ */
+/* $NiH: dccserver.c,v 1.20 2002/10/15 18:41:10 wiz Exp $ */
 /*-
  * Copyright (c) 2002 Thomas Klausner.
  * All rights reserved.
@@ -542,7 +542,7 @@ main(int argc, char *argv[])
 
     while (1) {
 	struct sockaddr_in raddr;
-	socklen_t raddrlen;
+	unsigned int raddrlen;
 	int new_sock;
 
 	/* clean up after dead children */
