@@ -1,4 +1,4 @@
-/* $NiH: dccserver.c,v 1.57 2003/05/11 02:04:10 wiz Exp $ */
+/* $NiH: dccserver.c,v 1.58 2003/05/11 02:06:01 wiz Exp $ */
 /*-
  * Copyright (c) 2002, 2003 Thomas Klausner.
  * All rights reserved.
@@ -37,10 +37,13 @@
 #include <sys/wait.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <signal.h>
 
 #ifndef HAVE_SOCKLEN_T
 typedef unsigned int socklen_t;
+#endif
+
+#ifndef SIGINFO
+#define SIGINFO SIGUSR1
 #endif
 
 /* backlog argument for listen() */
@@ -52,8 +55,8 @@ char nickname[1024];
 
 /* signal handler variables */
 
-volatile int sigchld = 0;
-volatile int siginfo = 0;
+volatile sig_atomic_t sigchld = 0;
+volatile sig_atomic_t siginfo = 0;
 
 
 #define NO_OF_CHILDREN 100
