@@ -30,7 +30,7 @@
 
 	* dccsend.c (send_file): remove two unused variables.
 	(parse_send_line): remove unused variable.
-	(main): remove tthree unused variables.
+	(main): remove three unused variables.
 	(global): remove unused variable.
 
 	* dccserver.c (get_file): show time taken by transfer and transfer
