@@ -3,7 +3,7 @@
 # init
 
 AC_PREREQ(2.57)
-AC_REVISION([$NiH: configure.ac,v 1.23 2003/05/12 21:34:17 wiz Exp $])
+AC_REVISION([$NiH: configure.ac,v 1.24 2003/05/12 21:58:33 wiz Exp $])
 AC_INIT([dccserver],[0.3b],[tk@giga.or.at])
 AC_CONFIG_SRCDIR([dccserver.c])
 AC_CONFIG_HEADERS([config.h])
@@ -27,7 +27,11 @@ AC_CHECK_LIB(nsl, main)
 
 # library functions
 
-AC_REPLACE_FUNCS([getaddrinfo err errx poll strlcpy warn warnx])
+AC_MSG_CHECKING([checking for getaddrinfo])
+AC_TRY_LINK([#include <netdb.h>], [getaddrinfo(0,0,0,0);],
+[AC_MSG_RESULT([yes]); AC_DEFINE([HAVE_GETADDRINFO], [1], [Define to 1 if you have the `getaddrinfo' function.])],
+[AC_MSG_RESULT([no]); AC_LIBOBJ(getaddrinfo)])
+AC_REPLACE_FUNCS([err errx poll strlcpy warn warnx])
 
 # types
 
