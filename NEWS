@@ -1,4 +1,10 @@
-0.3a: (test release)
+0.3b: (test release)
+
+	Added proper timeout handling.
+
+	Add "info" command; shows current transfer states for all
+	connections. Sending dccserver a SIGINFO (or SIGUSR1 on
+	systems without SIGINFO) signal also works.
 
 	Simplified build on Darwin, and included instructions.
 
