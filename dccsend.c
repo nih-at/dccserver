@@ -1,4 +1,4 @@
-/* $NiH: dccsend.c,v 1.20 2003/10/28 20:26:47 wiz Exp $ */
+/* $NiH: dccsend.c,v 1.21 2003/10/29 22:44:52 wiz Exp $ */
 /*-
  * Copyright (c) 2003 Thomas Klausner.
  * All rights reserved.
@@ -287,7 +287,7 @@ void
 usage(const char *prg)
 {
 
-    fprintf(stderr, "%s: send a file to a MIRC /dccserver\n\n"
+    fprintf(stderr, "%s: send a file to a mIRC /dccserver\n\n"
 	    "Usage:\n"
 	    "%s [-hv] [-n nickname] [-p port] [-r remotenick] host filename\n"
 	    "Where nickname is the own nick that should be used (default: 'dccserver'),\n"

@@ -5,7 +5,7 @@
 2003-10-29  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
 
 	* dccsend.c (send_file): after sending the file, read from network
-	until remote closes connection. Fixes sending files to a MIRC DCC
+	until remote closes connection. Fixes sending files to a mIRC DCC
 	server.
 
 	* dccsend.c (main): add undocumented -d flag which spews some

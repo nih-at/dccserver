@@ -1,5 +1,5 @@
 dccserver is a standalone program aiming to provide the functions of
-MIRC's /dccserver command.
+mIRC's /dccserver command.
 
 Currently, Chat and Send (including resume) modes are supported.
 Fserve and Get mode are not yet supported.

@@ -1,4 +1,4 @@
-/* $NiH: dccserver.c,v 1.62 2003/05/12 18:44:03 wiz Exp $ */
+/* $NiH: dccserver.c,v 1.63 2003/05/14 09:45:10 wiz Exp $ */
 /*-
  * Copyright (c) 2002, 2003 Thomas Klausner.
  * All rights reserved.
@@ -224,7 +224,7 @@ void
 usage(const char *prg)
 {
 
-    fprintf(stderr, "%s: emulate mirc's /dccserver command\n\n"
+    fprintf(stderr, "%s: emulate mIRC's /dccserver command\n\n"
 	    "Usage:\n"
 	    "%s [-ehiv] [-n nickname] [-p port]\n"
 	    "Where port is the port on which %s should listen,\n"

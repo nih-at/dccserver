@@ -1,8 +1,8 @@
 0.4:
 
-	Add "close" command; close particular connections.
+	Added "close" command; close particular connections.
 
-	Add "info" command; shows current transfer states for all
+	Added "info" command; shows current transfer states for all
 	connections. Sending dccserver a SIGINFO (or SIGUSR1 on
 	systems without SIGINFO) signal works too.
 
@@ -17,10 +17,10 @@
 	-p multiple times.
 	Requested by Maik Zumstrull <Maik.Zumstrull@gmx.de>.
 
-	Fixed dccsend program to work with MIRC.
+	Fixed dccsend program to work with mIRC.
 
 	Add contrib/dccsend.pl from David Oftedal <david@start.no>
-	for xchat users.
+	for X-Chat users.
 
 0.3:
 	Add dccsend program to send files to a remote dccserver.

@@ -1,4 +1,4 @@
-.\" $NiH: dccserver.mdoc,v 1.17 2003/05/25 00:40:31 wiz Exp $
+.\" $NiH: dccserver.mdoc,v 1.18 2003/05/25 00:41:36 wiz Exp $
 .\"
 .\" Copyright (c) 2002, 2003 Thomas Klausner.
 .\" All rights reserved.
@@ -33,7 +33,7 @@
 .Os
 .Sh NAME
 .Nm dccserver
-.Nd simulate MIRC's /dccserver command
+.Nd simulate mIRC's /dccserver command
 .Sh SYNOPSIS
 .Nm
 .Op Fl ehiv
@@ -41,7 +41,7 @@
 .Op Fl p Ar port
 .Sh DESCRIPTION
 .Nm
-aims to provide the functions of MIRC's /dccserver command.
+aims to provide the functions of mIRC's /dccserver command.
 .Pp
 Currently, Chat and Send (including resume) modes are supported.
 Fserve and Get mode are not yet supported.
@@ -85,7 +85,7 @@ If no
 .Fl p
 is given,
 .Nm
-will listen on port 59, since that is MIRC's default port.
+will listen on port 59, since that is mIRC's default port.
 Please note that you have to have root privileges to bind to ports
 below 1024.
 See
@@ -156,7 +156,7 @@ was written by
 .Sh BUGS
 Get and Fserve modes are not yet supported.
 .Sh SECURITY CONSIDERATIONS
-MIRC's default port is 59.
+mIRC's default port is 59.
 To bind to ports below 1024, one needs root privileges; for this reason
 .Nm
 is installed setuid root.
