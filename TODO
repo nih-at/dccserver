@@ -9,3 +9,4 @@
   . show open connections (to who, type, time, transferred data)
   . close specific connections
 . disallow particular clients?
+. readline?
