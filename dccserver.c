@@ -1,4 +1,4 @@
-/* $NiH: dccserver.c,v 1.4 2002/10/13 23:28:34 wiz Exp $ */
+/* $NiH: dccserver.c,v 1.5 2002/10/13 23:42:28 wiz Exp $ */
 #include <sys/socket.h>
 #include <sys/wait.h>
 #include <netinet/in.h>
@@ -23,9 +23,16 @@ typedef enum state_e { ST_NONE, ST_CHAT, ST_FSERVE, ST_SEND, ST_GET,
 
 static const char *prg;
 static char nickname[1024];
+static char filename[1024];
+static long filesize;
+static char partner[100];
 
 volatile int sigchld = 0;
 volatile int sigint = 0;
+
+#ifndef MIN
+#define MIN(a, b)	((a) < (b) ? (a) : (b))
+#endif
 
 void
 say(char *line, FILE *fp)
@@ -35,7 +42,7 @@ say(char *line, FILE *fp)
 }
 
 void
-tell_client(FILE *fp, int retcode, const char *fmt, ...)
+tell_client(FILE *fp, int retcode, char *fmt, ...)
 {
     va_list ap;
 
@@ -50,6 +57,73 @@ tell_client(FILE *fp, int retcode, const char *fmt, ...)
 
     return;
 }
+
+int
+get_file(FILE *fp)
+{
+    char buf[8192];
+    int len;
+    long rem;
+    int out;
+
+    /* XXX: more checks */
+    if ((out=open(filename, O_WRONLY|O_CREAT|O_EXCL, 0644)) == -1) {
+	warn("can't open file `%s' for writing",  filename);
+	return -1;
+    }
+
+    rem = filesize;
+    while((len=fread(buf, 1, MIN(rem, sizeof(buf)), fp)) > 0) {
+	if (write(out, buf, len) < len) {
+	    warn("write error on `%s'", filename);
+	    close(out);
+	    return -1;
+	}
+	rem -= len;
+
+	if (rem <= 0)
+	    break;
+    }
+
+    if (close(out) == -1)
+	warn("close error for `%s'", filename);
+
+    if (rem <= 0) {
+	warnx("`%s' complete (%ld bytes got)", filename, filesize);
+	return 0;
+    }
+
+    if (ferror(fp))
+	warn("error getting file `%s'", filename);
+
+    return -1;
+}
+    
+int
+parse_get_line(char *line)
+{
+    char *p, *q, *endptr;
+
+    if ((p=strtok(line+4, " ")) == NULL)
+	return -1;
+
+    strlcpy(partner, line+4, sizeof(partner));
+    if ((q=strtok(NULL, " ")) == NULL)
+	return -1;
+
+    filesize = strtol(q, &endptr, 10);
+    if (*q == '\0' || *endptr != '\0' || (filesize <=0))
+	return -1;
+
+    if ((q=strtok(NULL, " ")) == NULL)
+	return -1;
+
+    strlcpy(filename, q, sizeof(filename));
+    if ((strlen(filename) == 0) || (strchr(filename, '/') != NULL))
+	return -1;
+
+    return 0;
+}    
 
 void
 sig_handle(int signal)
@@ -71,10 +145,9 @@ sig_handle(int signal)
 state_t
 converse_with_client(FILE *fp, state_t state, char *line)
 {
-    static char partner[100];
     state_t ret;
-    char *p;
 
+    ret = state;
     switch(state) {
     case ST_NONE:
 	if (strncmp("100 ", line, 4) == 0) {
@@ -85,54 +158,59 @@ converse_with_client(FILE *fp, state_t state, char *line)
 	}
 	else if (strncmp("110 ", line, 4) == 0) {
 	    strlcpy(partner, line+4, sizeof(partner));
+#ifdef NOT_YET
 	    tell_client(fp, 111, NULL);
 	    warnx("starting fserve session with %s", partner);
 	    ret = ST_FSERVE;
+#endif
+	    tell_client(fp, 151, NULL);
+	    ret = ST_END;
 	}
 	else if (strncmp("120 ", line, 4) == 0) {
-	    if ((p=strchr(line, ' ')) != NULL) {
-		*p = '\0';
+	    /* Client sending file */
+	    if (parse_get_line(line) < 0) {
+		tell_client(fp, 151, NULL);
+		break;
 	    }
-	    strlcpy(partner, line+4, sizeof(partner));
-	    tell_client(fp, 121, NULL);
-	    ret = ST_SEND;
-	    /* XXX */
-	    say("I don't feel like getting files right now.\n", fp);
+
+	    /* XXX: resume */
+	    tell_client(fp, 121, "0");
+	    get_file(fp);
 	    ret = ST_END;
 	}
 	else if (strncmp("130 ", line, 4) == 0) {
+#ifdef NOT_YET
 	    tell_client(fp, 131, NULL);
 	    ret = ST_GET;
-	    /* XXX */
-	    say("I don't feel like sending files right now.\n", fp);
+#endif
+	    tell_client(fp, 151, NULL);
 	    ret = ST_END;
 	}
 	else {
-	    tell_client(fp, 151, "invalid command");
+	    tell_client(fp, 151, NULL);
 	    ret = ST_END;
 	    break;
 	}
-	strlcpy(partner, line+4, sizeof(partner));
-	if ((p=strchr(partner, ' ')) != NULL) {
-	    *p = '\0';
-	}
-
 	break;
 
     case ST_CHAT:
+	printf("<%s> %s\n", partner, line);
+	break;
+
     case ST_FSERVE:
-    case ST_SEND:
-    case ST_GET:
 	if (strcasecmp(line, "quit") == 0 ||
 	    strcasecmp(line, "exit") == 0) {
 	    say("Goodbye!", fp);
 	    ret = ST_END;
 	}
+	break;
+    case ST_GET:
 	break;   
 
+    case ST_SEND:
     case ST_END:
     default:
-	    tell_client(fp, 151, "not supported");
+	    tell_client(fp, 151, NULL);
 	    ret = ST_END;
     }
 
@@ -143,8 +221,8 @@ void
 do_child(int sock)
 {
     FILE *fp;
-    char *buf, *lbuf;
-    size_t len;
+    char buf[8192];
+    char *p;
     state_t state;
 
     state = ST_NONE;
@@ -154,28 +232,22 @@ do_child(int sock)
 	err(1, "[child] can't fdopen");
     }
 
-    lbuf = NULL;
-    while ((state != ST_END) && (buf=fgetln(fp, &len)) != NULL) {
-	if (buf[len - 1] == '\n')
-	    buf[len - 1] = '\0';
-	else {
-	    if ((lbuf=(char *)malloc(len + 1)) == NULL)
-		err(1, "malloc");
-	    memcpy(lbuf, buf, len);
-	    lbuf[len] = '\0';
-	    buf = lbuf;
+    while ((state != ST_END) && (fgets(buf, sizeof(buf), fp) != NULL)) {
+	if ((*buf == '\n') || (*buf == '\r')) {
+	    /* empty line */
+	    *buf = '\0';
 	}
-
+	else if ((p=strtok(buf, "\n\r")) == NULL) {
+	    warn("client sent too long line");
+	    tell_client(fp, 151, NULL);
+	    state = ST_END;
+	    continue;
+	}
 	state = converse_with_client(fp, state, buf);
-
-	/* ATTENTION: buf overwritten during next f* function */
-	/* fwrite("Hello!\n", 7, 1, fp); */
-
-	if (lbuf != NULL) {
-	    free(lbuf);
-	    lbuf = NULL;
-	}
     }
+
+    if (state != ST_END)
+	warnx("closing connection with %s", partner);
 
     fclose(fp);
     exit(0);
@@ -248,7 +320,7 @@ main(int argc, char *argv[])
 
 	case 'p':
 	    port = strtol(optarg, &endptr, 10);
-	    if (optarg[1] == '\0' || *endptr != '\0')
+	    if (*optarg == '\0' || *endptr != '\0')
 		usage();
 
 	    break;
