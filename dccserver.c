@@ -1,4 +1,4 @@
-/* $NiH: dccserver.c,v 1.36 2003/04/03 15:50:36 wiz Exp $ */
+/* $NiH: dccserver.c,v 1.37 2003/04/04 12:15:45 wiz Exp $ */
 /*-
  * Copyright (c) 2002, 2003 Thomas Klausner.
  * All rights reserved.
@@ -144,8 +144,13 @@ get_file(int id, FILE *fp)
 	    offset = sb.st_size;
 	    warnx("file exists, resuming after %ld bytes", offset);
 	}
+	else if (sb.st_size == filesize) {
+	    warnx("already have complete file, denying");
+	    tell_client(fp, 151, NULL);
+	    return -1;
+	}
 	else {
-	    /* XXX: rename */
+	    warnx("already have more bytes than client willing to send, denying");
 	    tell_client(fp, 151, NULL);
 	    return -1;
 	}
@@ -355,6 +360,7 @@ converse_with_client(FILE *fp, state_t state, char *line, int id)
 
 	    warnx("getting file `%s' (%ld bytes) from %d: %s", filename,
 		  filesize, id, partner);
+	    fflush(stderr);
 
 	    get_file(id, fp);
 	    ret = ST_END;
@@ -474,6 +480,7 @@ handle_connection(int sock, int oldsock)
     children[i].pid = child;
     children[i].sock = sock;
     warnx("child %d started (pid %d)", i, child);
+    fflush(stderr);
 
     return;
 }
