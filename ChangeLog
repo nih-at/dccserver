@@ -1,3 +1,8 @@
+2003-04-05  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
+
+	* dccserver.c (tell_client): add fflush; seems to help at least on
+	Solaris.
+
 2003-04-04  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
 
 	* getaddrinfo.h: new file, from Dieter Baron.

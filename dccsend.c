@@ -1,4 +1,4 @@
-/* $NiH: dccsend.c,v 1.5 2003/04/04 13:44:06 wiz Exp $ */
+/* $NiH: dccsend.c,v 1.6 2003/04/04 21:28:10 wiz Exp $ */
 /*-
  * Copyright (c) 2003 Thomas Klausner.
  * All rights reserved.
@@ -32,12 +32,6 @@
   
 #include "config.h"
 
-#if 0
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#endif
 #include <sys/socket.h>
 #include <sys/stat.h>
 #ifdef HAVE_ERR_H
@@ -134,6 +128,7 @@ tell_client(FILE *fp, int retcode, char *fmt, ...)
 {
     va_list ap;
 
+    fflush(fp);
     fprintf(fp, "%03d %s", retcode, nickname);
     if (fmt != NULL) {
 	fputs(" ", fp);
@@ -176,6 +171,8 @@ send_file(FILE *fp, char *filename, long filesize)
 	}
     }
 
+    /* safety flush, needed on at least HP-UX 11 */
+    fflush(fp);
     /* get file data into local file */
     rem = filesize - offset;
     while((len=fread(buf, 1, sizeof(buf), fin)) > 0) {

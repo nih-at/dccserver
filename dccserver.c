@@ -1,4 +1,4 @@
-/* $NiH: dccserver.c,v 1.37 2003/04/04 12:15:45 wiz Exp $ */
+/* $NiH: dccserver.c,v 1.38 2003/04/04 12:52:36 wiz Exp $ */
 /*-
  * Copyright (c) 2002, 2003 Thomas Klausner.
  * All rights reserved.
@@ -107,6 +107,8 @@ tell_client(FILE *fp, int retcode, char *fmt, ...)
 {
     va_list ap;
 
+    /* safety flush, needed on at least Solaris */
+    fflush(fp);
     fprintf(fp, "%03d %s", retcode, nickname);
     if (fmt != NULL) {
 	fputs(" ", fp);
