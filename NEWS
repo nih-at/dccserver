@@ -1,6 +1,4 @@
-0.2.1:
-	0.3 pre-release -- do not redistribute, please.
-
+0.3:
 	Add dccsend program to send files to a remote dccserver.
 	Requested by Antti Aaltonen <antzu@iki.fi>.
 
