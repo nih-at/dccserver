@@ -1,9 +1,3 @@
-. remove stalled time from average speed calculation?
-
-. how to handle write_complete better?
-. global connection_closed flag?
-. split up in more files to make it easier to find something
-
 Planned changes
 . don't send data to 'Send' connections -- they quit in this case
 . some commands to dccserver:
@@ -15,6 +9,7 @@ Planned changes
   all replacement functions or -lpoll
 . warn in autoconf if poll and sys/poll.h are not found, not in
   dccserver.c.
+. split source up in more files to make it easier to find something
 
 Possible changes
 . make get work
@@ -23,6 +18,7 @@ Possible changes
 . disallow particular clients
 . readline
 . include poll-emulation
+. remove stalled time from average speed calculation
 
 dccsend:
 . verify remote nickname
