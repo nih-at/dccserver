@@ -28,8 +28,9 @@ install-exec-hook:
 	echo dccserver NOT installed setuid root.
 
 update-man:
-	mdoc2man dccsend.mdoc > dccsend.$$$$ && diff -I NiH dccsend.$$$$ dccsend.man \
-		|| mv dccsend.$$$$ dccsend.man
-	mdoc2man dccserver.mdoc > dccserver.$$$$ && diff -I NiH dccserver.$$$$ dccserver.man \
-		|| mv dccserver.$$$$ dccserver.man
-	rm -f dccsend.$$$$ dccserver.$$$$
+	TEMPEXT=mk-$$$$; \     
+	mdoc2man dccsend.mdoc > dccsend.$$TEMPEXT && diff -I NiH dccsend.$$TEMPEXT dccsend.man \
+		|| mv dccsend.$$TEMPEXT dccsend.man; \
+	mdoc2man dccserver.mdoc > dccserver.$$TEMPEXT && diff -I NiH dccserver.$$TEMPEXT dccserver.man \
+		|| mv dccserver.$$TEMPEXT dccserver.man; \  
+	rm -f dccsend.$$TEMPEXT dccserver.$$TEMPEXT
