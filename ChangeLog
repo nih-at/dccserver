@@ -1,5 +1,11 @@
 2003-04-05  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
 
+	* dccsend.c (send_file): fix fseek return value check.
+
+	* dccserver.c (get_file): don't append to file, but seek to offset
+	to avoid problems with two or more writers to the same file.
+	Idea from Rudolf Polzer.
+
 	* dccserver.c (tell_client): add fflush; seems to help at least on
 	Solaris.
 

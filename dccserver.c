@@ -1,4 +1,4 @@
-/* $NiH: dccserver.c,v 1.39 2003/04/05 00:04:48 wiz Exp $ */
+/* $NiH: dccserver.c,v 1.40 2003/04/05 00:18:54 wiz Exp $ */
 /*-
  * Copyright (c) 2002, 2003 Thomas Klausner.
  * All rights reserved.
@@ -156,7 +156,7 @@ get_file(int id, FILE *fp)
 	    tell_client(fp, 151, NULL);
 	    return -1;
 	}
-	if ((out=open(filename, O_WRONLY|O_APPEND, 0644)) == -1) {
+	if ((out=open(filename, O_WRONLY, 0644)) == -1) {
 	    warn("can't open file `%s' for appending",  filename);
 	    tell_client(fp, 151, NULL);
 	    return -1;
@@ -169,6 +169,11 @@ get_file(int id, FILE *fp)
 	    tell_client(fp, 151, NULL);
 	    return -1;
 	}
+    }
+
+    if (lseek(out, offset, SEEK_SET) != offset) {
+	warn("can't seek to offset %ld", offset);
+	tell_client(fp, 151, NULL);
     }
 
     tell_client(fp, 121, "%ld", offset);

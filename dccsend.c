@@ -1,4 +1,4 @@
-/* $NiH: dccsend.c,v 1.6 2003/04/04 21:28:10 wiz Exp $ */
+/* $NiH: dccsend.c,v 1.7 2003/04/05 00:04:48 wiz Exp $ */
 /*-
  * Copyright (c) 2003 Thomas Klausner.
  * All rights reserved.
@@ -164,7 +164,7 @@ send_file(FILE *fp, char *filename, long filesize)
     }
 
     if (offset > 0) {
-	if (fseek(fin, offset, SEEK_SET) != offset) {
+	if (fseek(fin, offset, SEEK_SET) != 0) {
 	    warn("can't seek to %ld", offset);
 	    fclose(fin);
 	    return -1;
