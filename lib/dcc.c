@@ -1,4 +1,4 @@
-/* $NiH$ */
+/* $NiH: dcc.c,v 1.1 2003/05/25 00:00:33 wiz Exp $ */
 /*-
  * Copyright (c) 2003 Thomas Klausner.
  * All rights reserved.
@@ -75,6 +75,9 @@ get_line_from_client(int sock, char *line, int linelen)
 	if (errno != EINTR && ++errcount > MAX_ERRORS)
 	    warnx("%d errors in a row -- closing connection", MAX_ERRORS);
 	break;
+    case 0:
+	warnx("connection closed");
+	break;
     default:
 	if (strtok(line, "\n\r") == NULL) {
 	    warn("client sent too long line");
@@ -145,9 +148,13 @@ parse_reply(char *line, char *partner, int partnersize, char **arg2, char **arg3
 	    return -1;
 	}
     }
-    else if (args == 2)
-	if ((*arg2=strdup(p)) == NULL)
+    else if (args == 2) {
+	q = p + strlen(p) + 1;
+	if (q >= line + linelen)
 	    return -1;
+	if ((*arg2=strdup(q)) == NULL)
+	    return -1;
+    }
 
     return command;
 }
