@@ -1,13 +1,11 @@
-. SIGINFO doesn't work on HPUX - doesn't get caught? children don't get it.
-  additionally, second kills process
-. children don't die on HPUX
+. remove stalled time from average speed calculation?
+
 . how to handle write_complete better?
 . global connection_closed flag?
 . split up in more files to make it easier to find something
 
 Planned changes
 . don't send data to 'Send' connections -- they quit in this case
-. download speed indicator during download
 . some commands to dccserver:
   . close specific connections
   . stop particular child processes
