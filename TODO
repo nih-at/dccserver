@@ -1,6 +1,5 @@
+Planned changes
 . accept multiple port arguments, and listen on all of them
-. make get work
-. make fserve work
 . make it easier to find out which child does what (SIGINFO?)
 . timeouts
 . don't send data to 'Send' connections -- they quit in this case
@@ -10,11 +9,16 @@
   . show open connections (to who, type, time, transferred data)
   . close specific connections
 . add option to create per-remote download dirs
-. bind to specific IP only?
-. disallow particular clients?
-. readline?
-. write dccclient?
-. rewrite to have only one program instead of forking?
+. regression tests
+
+Possible changes
+. add quit command
+. make get work
+. make fserve work
+. bind to specific IP only
+. disallow particular clients
+. readline
+. write dccclient
 
 Might want to fix:
 hppa11: dccserver.c: In function `main':
