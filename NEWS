@@ -1,5 +1,8 @@
 0.3a: (test release)
+
 	Simplified build on Darwin, and included instructions.
+
+	Show time taken by transfers and transfer rate.
 
 	dccserver can now listen on multiple ports; just specify
 	-p multiple times.
