@@ -1,4 +1,4 @@
-/* $NiH$ */
+/* $NiH: dccserver.h,v 1.1 2003/05/11 00:37:26 wiz Exp $ */
 /*-
  * Copyright (c) 2003 Thomas Klausner.
  * All rights reserved.
@@ -45,6 +45,7 @@
 #warning Neither poll.h nor sys/poll.h found -- compilation will probably fail.
 #warning In that case, read the included README.Darwin.
 #endif /* HAVE_POLL_H || HAVE_SYS_POLL_H */
+#include <signal.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -53,6 +54,10 @@
 
 #ifndef HAVE_ERR
 void err(int, const char *, ...);
+#endif
+
+#ifndef HAVE_ERRX
+void errx(int, const char *, ...);
 #endif
 
 #ifndef HAVE_STRLCPY
@@ -75,8 +80,8 @@ typedef enum state_e { ST_NONE, ST_CHAT, ST_FSERVE, ST_SEND, ST_GET,
 
 /* global variables */
 /* for handling signals */
-extern volatile int sigchld;
-extern volatile int siginfo;
+extern volatile sig_atomic_t sigchld;
+extern volatile sig_atomic_t siginfo;
 /* option arguments/toggles */
 extern int filter_control_chars;
 extern char nickname[];
