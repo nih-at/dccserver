@@ -1,4 +1,4 @@
-/* $NiH: dccserver.h,v 1.2 2003/05/11 02:40:13 wiz Exp $ */
+/* $NiH: dccserver.h,v 1.3 2003/05/12 18:44:03 wiz Exp $ */
 /*-
  * Copyright (c) 2003 Thomas Klausner.
  * All rights reserved.
@@ -42,8 +42,7 @@
 #elif HAVE_SYS_POLL_H
 #include <sys/poll.h>
 #else
-#warning Neither poll.h nor sys/poll.h found -- compilation will probably fail.
-#warning In that case, read the included README.Darwin.
+#include "poll.h"
 #endif /* HAVE_POLL_H || HAVE_SYS_POLL_H */
 #include <signal.h>
 #include <stdarg.h>
