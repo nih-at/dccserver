@@ -1,6 +1,7 @@
 2003-04-07  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
 
 	* dccsend.c (usage): fix usage.
+	(main): change default nickname to "dccsend".
 
 	* dccserver.mdoc: add -e to SYNOPSIS.
 	* dccserver.man: regen.

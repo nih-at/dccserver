@@ -1,4 +1,4 @@
-/* $NiH: dccsend.c,v 1.8 2003/04/05 00:38:24 wiz Exp $ */
+/* $NiH: dccsend.c,v 1.9 2003/04/07 11:50:35 wiz Exp $ */
 /*-
  * Copyright (c) 2003 Thomas Klausner.
  * All rights reserved.
@@ -303,7 +303,7 @@ main(int argc, char *argv[])
     struct stat sb;
     int s;
 
-    strlcpy(nickname, "dccserver", sizeof(nickname));
+    strlcpy(nickname, "dccsend", sizeof(nickname));
     port = 59;
     prg = argv[0];
 
