@@ -1,6 +1,7 @@
 2003-05-25  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
 
 	* dccsend.c: use more code from libdcc.
+	(main_loop): verify remote nick vs. command line argument.
 
 	* lib/Makefile.am: rename to libdcc.
 	* Makefile.am: adapt to rename.

@@ -13,5 +13,4 @@ Possible changes
 . regression tests
 
 dccsend:
-. verify remote nickname
 . handle timeouts

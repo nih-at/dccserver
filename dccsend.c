@@ -1,4 +1,4 @@
-/* $NiH: dccsend.c,v 1.15 2003/05/24 23:53:50 wiz Exp $ */
+/* $NiH: dccsend.c,v 1.16 2003/05/25 00:34:16 wiz Exp $ */
 /*-
  * Copyright (c) 2003 Thomas Klausner.
  * All rights reserved.
@@ -74,9 +74,10 @@ void warnx(const char *, ...);
 #endif
 
 #define BACKLOG 10
+#define NICKSIZE 100
 
 static long offset;
-static char remotenick[100];
+static char remotenick[NICKSIZE];
 
 char nickname[1024];
 
@@ -186,6 +187,7 @@ void
 main_loop(int sock, char *filename, size_t filesize)
 {
     char line[8192];
+    char nick[NICKSIZE];
     char *arg2, *arg3, *endptr;
     state_t state;
 
@@ -200,9 +202,15 @@ main_loop(int sock, char *filename, size_t filesize)
 		state = ST_END;
 	    }
 	    else {
-		switch (parse_reply(line, remotenick, sizeof(remotenick), &arg2, &arg3)) {
+		switch (parse_reply(line, nick, sizeof(nick), &arg2, &arg3)) {
 		case 121:
-		    /* XXX: verify remote user */
+		    if (*remotenick && strcmp(remotenick, nick) != 0) {
+			warnx("remote nick `%s' does not match specified nick "
+			      "`%s', aborting", nick, remotenick);
+			tell_client(sock, 151, NULL);
+			state = ST_END;
+			break;
+		    }
 		    offset = strtol(arg2, &endptr, 10);
 		    if (*arg2 == '\0' || *endptr != '\0' || (offset < 0)) {
 			tell_client(sock, 151, NULL);
@@ -262,6 +270,7 @@ main(int argc, char *argv[])
     int s;
 
     strlcpy(nickname, "dccsend", sizeof(nickname));
+    *remotenick = '\0';
     port = 59;
 
     while ((c=getopt(argc, argv, "hn:p:r:v")) != -1) {
