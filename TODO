@@ -20,6 +20,7 @@ Possible changes
 . bind to specific IP only
 . disallow particular clients
 . readline
+. include poll-emulation
 
 dccsend:
 . verify remote nickname
