@@ -1,9 +1,11 @@
 2003-05-14  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
 
-	* child.c (tell_client): move from here...
-	* lib/io.c (tell_client): ... to here.
-	* child.c (write_complete): move from here...
-	* lib/io.c (write_complete): ... to here.
+	* dccserver.h: only have minimal includes here.
+	* child.c: add includes.
+	* dccserver.c: add includes.
+
+	* child.c (fdgets, findnl, read_some, tell_client, write_complete): move from here...
+	* lib/io.c (fdgets, findnl, read_some, tell_client, write_complete): ... to here.
 
 	* Makefile.am (AM_CPPFLAGS): look for header files in lib/.
 
