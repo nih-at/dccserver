@@ -1,4 +1,4 @@
-.\" $NiH: dccserver.mdoc,v 1.11 2003/04/07 13:16:41 wiz Exp $
+.\" $NiH: dccserver.mdoc,v 1.12 2003/04/11 09:55:16 wiz Exp $
 .\"
 .\" Copyright (c) 2002, 2003 Thomas Klausner.
 .\" All rights reserved.
@@ -110,7 +110,10 @@ and the space are necessary.
 You can enter
 .Dq quit
 (without a prepended child ID)
-to close all connections and exit the program.
+to close all connections and exit the program,
+and
+.Dq info
+to get an overview of the current connection state.
 .Pp
 Text coming from the remote clients will be shown prepended by their
 nickname and child ID.
@@ -143,8 +146,6 @@ was written by
 .An Thomas Klausner Aq tk@giga.or.at .
 .Sh BUGS
 Get and Fserve modes are not yet supported.
-.Pp
-There are no timeouts yet.
 .Sh SECURITY CONSIDERATIONS
 MIRC's default port is 59.
 To bind to ports below 1024, one needs root privileges; for this reason
