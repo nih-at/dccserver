@@ -10,6 +10,8 @@ Planned changes
 . regression tests
 . make configure.ac/Makefile.am smarter -- not both programs need
   all replacement functions or -lpoll
+. warn in autoconf if poll and sys/poll.h are not found, not in
+  dccserver.c.
 
 Possible changes
 . make get work
