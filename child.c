@@ -1,4 +1,4 @@
-/* $NiH: io.c,v 1.2 2003/05/10 20:49:40 wiz Exp $ */
+/* $NiH: io.c,v 1.3 2003/05/10 21:58:46 wiz Exp $ */
 /*-
  * Copyright (c) 2003 Thomas Klausner.
  * All rights reserved.
@@ -53,16 +53,24 @@
 #include <string.h>
 #include <unistd.h>
 
+struct transfer_state {
+    char *filename;
+    int infd;
+    int outfd;
+    int exceed_warning_shown;
+    long filesize;
+    long offset;
+    long rem;
+    struct timeval starttime;
+};
+
 /* XXX: duplicate */
 typedef enum state_e { ST_NONE, ST_CHAT, ST_FSERVE, ST_SEND, ST_GET,
 		       ST_GETFILE, ST_END } state_t;
 extern char nickname[];
 char partner[100];
 extern void display_remote_line(int, const unsigned char *);
-extern int parse_get_line(char *);
 extern char *strip_path(char *);
-char filename[1024];
-long filesize;
 
 /* maximum line length accepted from remote */
 #define BUFSIZE 4096
@@ -124,7 +132,6 @@ write_complete(int fd, int timeout, char *buf)
 {
     int len, written;
 
-    warnx("write_complete ``%s''", buf);
     len = strlen(buf);
     while (len > 0) {
 	switch (data_available(fd, DIRECTION_WRITE, timeout)) {
@@ -154,7 +161,6 @@ tell_client(int fd, int retcode, char *fmt, ...)
     int offset;
     va_list ap;
 
-    warnx("tell_client");
     /* nickname can't be that long */
     offset = snprintf(buf, sizeof(buf), "%03d %s", retcode, nickname);
 
@@ -176,7 +182,7 @@ tell_client(int fd, int retcode, char *fmt, ...)
 
 /* parse GET line given by remote client */
 int
-parse_get_line(char *line)
+parse_get_line(char *line, char **filename, long *filesize)
 {
     char *p, *q, *endptr;
 
@@ -190,40 +196,32 @@ parse_get_line(char *line)
 	return -1;
     *p = '\0';
 
-    filesize = strtol(q, &endptr, 10);
-    if (*q == '\0' || *endptr != '\0' || (filesize <=0))
+    *filesize = strtol(q, &endptr, 10);
+    if (*q == '\0' || *endptr != '\0' || (*filesize <=0))
 	return -1;
 
     /* remove path components in file name */
     q = strip_path(p+1);
-    strlcpy(filename, q, sizeof(filename));
-    if (strlen(filename) == 0)
+    if ((*filename=strdup(q)) == NULL)
 	return -1;
 
     return 0;
-}    
+}
 
-int
-read_file(int fd, int id)
+struct transfer_state *
+setup_read_file(int fd, char *filename, long filesize)
 {
-    char buf[8192];
-    int len;
-    long rem;
-    int out;
     struct stat sb;
+    struct transfer_state *ts;
     long offset;
-    long time_divisor;
-    double transfer_rate;
-    int exceed_warning_shown = 0;
-    struct timeval before, after;
+    int out;
 
-    warnx("read_file");
     if (stat(filename, &sb) == 0) {
 	/* file exists */
 	if ((sb.st_mode & S_IFMT) != S_IFREG) {
 	    warnx("existing directory entry for `%s' not a file", filename);
 	    tell_client(fd, 151, NULL);
-	    return -1;
+	    return NULL;
 	}
 	/* append (resume) */
 	if ((sb.st_size >= 0) && (sb.st_size < filesize)) {
@@ -233,17 +231,27 @@ read_file(int fd, int id)
 	else if (sb.st_size == filesize) {
 	    warnx("already have complete file, denying");
 	    tell_client(fd, 151, NULL);
-	    return -1;
+	    return NULL;
 	}
 	else {
-	    warnx("already have more bytes than client willing to send, denying");
+	    warnx("already have %ld bytes, client offers only %ld, denying",
+		  (long)sb.st_size, filesize);
 	    tell_client(fd, 151, NULL);
-	    return -1;
+	    return NULL;
 	}
 	if ((out=open(filename, O_WRONLY, 0644)) == -1) {
 	    warn("can't open file `%s' for appending",  filename);
 	    tell_client(fd, 151, NULL);
-	    return -1;
+	    return NULL;
+	}
+	if (lseek(out, offset, SEEK_SET) != offset) {
+	    warn("can't seek to offset %ld -- starting from zero", offset);
+	    offset = 0;
+	    if (lseek(out, offset, SEEK_SET) != offset) {
+		warn("error seeking to beginning -- giving up");
+		tell_client(fd, 151, NULL);
+		return NULL;
+	    }
 	}
     }
     else {
@@ -251,68 +259,106 @@ read_file(int fd, int id)
 	if ((out=open(filename, O_WRONLY|O_CREAT, 0644)) == -1) {
 	    warn("can't open file `%s' for writing",  filename);
 	    tell_client(fd, 151, NULL);
-	    return -1;
+	    return NULL;
 	}
     }
 
-    if (lseek(out, offset, SEEK_SET) != offset) {
-	warn("can't seek to offset %ld", offset);
+    if ((ts=malloc(sizeof(*ts))) == NULL) {
+	warn("malloc failure");
 	tell_client(fd, 151, NULL);
+	return NULL;
     }
+    if ((ts->filename=strdup(filename)) == NULL) {
+	warn("strdup failure");
+	tell_client(fd, 151, NULL);
+	free(ts);
+	return NULL;
+    }
+    ts->infd = fd;
+    ts->outfd = out;
+    ts->exceed_warning_shown = 0;
+    ts->filesize = filesize;
+    ts->offset = offset;
+    ts->rem = filesize - offset;
 
     tell_client(fd, 121, "%ld", offset);
 
-    gettimeofday(&before, NULL);
+    gettimeofday(&(ts->starttime), NULL);
 
-    /* get file data into local file */
-    rem = filesize - offset;
-    while (data_available(fd, DIRECTION_READ, TRANSFER_TIMEOUT) > 0
-	   && (len=read(fd, buf, sizeof(buf))) > 0) {
-	if (write(out, buf, len) < len) {
-	    warn("write error on `%s'", filename);
-	    close(out);
+    return ts;
+}
+
+int
+read_file(struct transfer_state *ts)
+{
+    char buf[8192];
+    int len;
+
+    switch (data_available(ts->infd, DIRECTION_READ, TRANSFER_TIMEOUT)) {
+    case -1:
+	warn("poll error");
+	return -1;
+    case 0:
+	warn("transfer timeout");
+	return -2;
+    default:
+	break;
+    }
+
+    if ((len=read(ts->infd, buf, sizeof(buf))) > 0) {
+	if (write(ts->outfd, buf, len) < len) {
+	    warn("write error on `%s'", ts->filename);
 	    return -1;
 	}
-	rem -= len;
+	ts->rem -= len;
 
-	if (rem < 0 && exceed_warning_shown == 0) {
-	    exceed_warning_shown = 1;
+	if (ts->rem < 0 && ts->exceed_warning_shown == 0) {
+	    ts->exceed_warning_shown = 1;
 	    warnx("getting more than %ld bytes for `%s'",
-		  filesize, filename);
+		  ts->filesize, ts->filename);
 	}
     }
+
+    return len;
+}
+
+
+int
+cleanup_read_file(struct transfer_state *ts, int id)
+{
+    long time_divisor;
+    double transfer_rate;
+    struct timeval after;
 
     gettimeofday(&after, NULL);
 
-    if (close(out) == -1)
-	warn("close error for `%s'", filename);
+    if (close(ts->outfd) == -1)
+	warn("close error for `%s'", ts->filename);
 
-    if (before.tv_usec > after.tv_usec) {
+    if (ts->starttime.tv_usec > after.tv_usec) {
 	after.tv_usec += 1000000;
 	after.tv_sec--;
     }
-    after.tv_usec -= before.tv_usec;
-    after.tv_sec -= before.tv_sec;
-#if 0
-    warnx("time taken: %lds %ldus", after.tv_sec, after.tv_usec);
-#endif
+    after.tv_usec -= ts->starttime.tv_usec;
+    after.tv_sec -= ts->starttime.tv_sec;
 
     time_divisor = (after.tv_sec*1000+(after.tv_usec+500)/1000);
     /* avoid division by zero in _very_ fast (or small) transfers */
     if (time_divisor == 0)
 	time_divisor = 1;
-    transfer_rate = (((double)(filesize-rem-offset))/1024*1000)/time_divisor;
-    if (rem <= 0) {
+    transfer_rate = (((double)(ts->filesize-ts->rem-ts->offset))/1024*1000)/time_divisor;
+    if (ts->rem <= 0) {
 	warnx("child %d: client %s completed sending `%s' (%ld/%ld bytes got, %ld new)",
-	      id, partner, filename, filesize-rem, filesize, filesize-rem-offset);
+	      id, partner, ts->filename, ts->filesize - ts->rem, ts->filesize,
+	      ts->filesize - ts->rem - ts->offset);
 	warnx("child %d: time %ld.%ld seconds, transfer rate %.1fKb/s", id,
 	      after.tv_sec, (after.tv_usec+50000)/100000, transfer_rate);
 	return 0;
     }
     else {
 	warnx("child %d: client %s closed connection for `%s' (%ld/%ld bytes got, "
-	      "%ld new)", id, partner, filename, filesize-rem, filesize,
-	      filesize-offset-rem);
+	      "%ld new)", id, partner, ts->filename, ts->filesize - ts->rem, ts->filesize,
+	      ts->filesize - ts->rem - ts->offset);
 	warnx("child %d: time %ld.%ld seconds, transfer rate %.1fKb/s", id,
 	      after.tv_sec, (after.tv_usec+50000)/100000, transfer_rate);
     }    
@@ -345,7 +391,6 @@ fdgets(int fd, char *buf, int bufsize)
     int ret;
     int len;
 
-    warnx("fdgets");
     if (bufsize <= 0)
 	return 0;
 
@@ -383,7 +428,7 @@ fdgets(int fd, char *buf, int bufsize)
 
 /* parse line from client, update state machine, and reply */
 state_t
-parse_client_reply(int fd, int id, state_t state, char *line)
+parse_client_reply(int fd, int id, state_t state, char *line, void **arg)
 {
     state_t ret;
 
@@ -407,19 +452,25 @@ parse_client_reply(int fd, int id, state_t state, char *line)
 	    ret = ST_END;
 	}
 	else if (strncmp("120 ", line, 4) == 0) {
+	    char *filename = NULL;
+	    long filesize;
+
 	    /* Client sending file */
-	    if (parse_get_line(line) < 0) {
+	    if (parse_get_line(line, &filename, &filesize) < 0) {
 		tell_client(fd, 151, NULL);
 		ret = ST_END;
 		break;
 	    }
 
-	    warnx("getting file `%s' (%ld bytes) from %d: %s", filename,
-		  filesize, id, partner);
+	    warnx("%d: %s offers `%s' (%ld bytes)", id, partner,
+		  filename, filesize);
 	    fflush(stderr);
+	    ret = ST_GETFILE;
 
-	    read_file(fd, id);
-	    ret = ST_END;
+	    if ((*arg=setup_read_file(fd, filename, filesize)) == NULL)
+		ret = ST_END;
+
+	    free(filename);
 	}
 	else if (strncmp("130 ", line, 4) == 0) {
 #ifdef NOT_YET
@@ -432,7 +483,6 @@ parse_client_reply(int fd, int id, state_t state, char *line)
 	else {
 	    tell_client(fd, 151, NULL);
 	    ret = ST_END;
-	    break;
 	}
 	break;
 
@@ -461,7 +511,7 @@ parse_client_reply(int fd, int id, state_t state, char *line)
 }
 
 state_t
-get_line_from_client(int sock, int id, state_t state)
+get_line_from_client(int sock, int id, state_t state, void **arg)
 {
     char line[BUFSIZE];
     int errcount;
@@ -490,7 +540,7 @@ get_line_from_client(int sock, int id, state_t state)
 	    ret = ST_END;
 	    break;
 	}
-	ret = parse_client_reply(sock, id, state, line);
+	ret = parse_client_reply(sock, id, state, line, arg);
 	break;
     }
 
@@ -501,17 +551,21 @@ void
 child_loop(int sock, int id)
 {
     state_t state;
+    void *arg;
 
     state = ST_NONE;
 
     while (state != ST_END) {
 	switch (state) {
 	case ST_NONE:
-	    state = get_line_from_client(sock, id, state);
+	    state = get_line_from_client(sock, id, state, &arg);
 	    break;
 
 	case ST_GETFILE:
-	    state = read_file(sock, id);
+	    if (read_file((struct transfer_state *)arg) <= 0)
+		state = ST_END;
+	    if (state != ST_GETFILE)
+		cleanup_read_file((struct transfer_state *)arg, id);
 	    break;
 
 	default:
