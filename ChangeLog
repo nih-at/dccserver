@@ -1,3 +1,21 @@
+2003-05-12  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
+
+	* dccserver.mdoc: document "close" command.
+
+	* dccserver.c: add sigint variable.
+	(sig_handle): handle SIGINT.
+	(handle_input): add "close" command, which closes particular
+	client connections (by killing the child).
+	(main): install signal handler for SIGINT.
+	(main): exit gracefully on SIGINT.
+	(main): mention port to which client is connected.
+
+	* dccserver.h: add sigint variable.
+
+	* child.c (cleanup_read_file): fix return value.
+	(get_line_from_client): fix return value.
+	(child_loop): exit gracefully on SIGINT.
+
 2003-05-11  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
 
 	* configure.ac: 0.3b test release.

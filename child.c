@@ -1,4 +1,4 @@
-/* $NiH: child.c,v 1.10 2003/05/11 16:05:13 wiz Exp $ */
+/* $NiH: child.c,v 1.11 2003/05/11 16:14:23 wiz Exp $ */
 /*-
  * Copyright (c) 2003 Thomas Klausner.
  * All rights reserved.
@@ -550,7 +550,7 @@ cleanup_read_file(struct transfer_state *ts, int id)
     free(ts->filename);
     free(ts);
 
-    return -1;
+    return ret;
 
 }
 
@@ -647,6 +647,7 @@ get_line_from_client(int sock, int id, state_t state, void **arg)
     state_t ret;
 
     errcount = 0;
+    ret = state;
 
     /* get new-line terminated line from client */
     len = fdgets(sock, line, sizeof(line));
@@ -687,6 +688,13 @@ child_loop(int sock, int id)
     state = ST_NONE;
 
     while (state != ST_END) {
+	if (sigint) {
+	    if (state == ST_GETFILE)
+		display_transfer_statistics((struct transfer_state *)arg, id);
+	    warnx("child %d: SIGINT caught -- exiting", id);
+	    break;
+	}
+
 	switch (state) {
 	case ST_NONE:
 	    state = get_line_from_client(sock, id, state, &arg);

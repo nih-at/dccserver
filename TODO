@@ -1,8 +1,5 @@
 Planned changes
 . don't send data to 'Send' connections -- they quit in this case
-. some commands to dccserver:
-  . close specific connections
-  . stop particular child processes
 . add option to create per-remote download dirs
 . regression tests
 . make configure.ac/Makefile.am smarter -- not both programs need

@@ -1,4 +1,4 @@
-/* $NiH: dccserver.h,v 1.1 2003/05/11 00:37:26 wiz Exp $ */
+/* $NiH: dccserver.h,v 1.2 2003/05/11 02:40:13 wiz Exp $ */
 /*-
  * Copyright (c) 2003 Thomas Klausner.
  * All rights reserved.
@@ -82,6 +82,8 @@ typedef enum state_e { ST_NONE, ST_CHAT, ST_FSERVE, ST_SEND, ST_GET,
 /* for handling signals */
 extern volatile sig_atomic_t sigchld;
 extern volatile sig_atomic_t siginfo;
+extern volatile sig_atomic_t sigint;
+
 /* option arguments/toggles */
 extern int filter_control_chars;
 extern char nickname[];

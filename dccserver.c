@@ -1,4 +1,4 @@
-/* $NiH: dccserver.c,v 1.60 2003/05/11 14:56:09 wiz Exp $ */
+/* $NiH: dccserver.c,v 1.61 2003/05/11 16:04:19 wiz Exp $ */
 /*-
  * Copyright (c) 2002, 2003 Thomas Klausner.
  * All rights reserved.
@@ -57,6 +57,7 @@ char nickname[1024];
 
 volatile sig_atomic_t sigchld = 0;
 volatile sig_atomic_t siginfo = 0;
+volatile sig_atomic_t sigint = 0;
 
 
 #define NO_OF_CHILDREN 100
@@ -83,6 +84,9 @@ sig_handle(int signo)
 	break;
     case SIGINFO:
 	siginfo = 1;
+	break;
+    case SIGINT:
+	sigint = 1;
 	break;
     default:
 	break;
@@ -217,10 +221,23 @@ handle_input(int echo_input)
 
 	write(children[child].sock, end+2, strlen(end+2));
     }
-    else if (strncmp(buf, "quit", 4) == 0)
-	return -1;
+    else if (strncmp(buf, "close ", 6) == 0) {
+	child = strtol(buf+6, &end, 10);
+	if ((child >= 0 && child < NO_OF_CHILDREN)) {
+	    if (children[child].pid == -1) {
+		warnx("child %d is dead", child);
+		return 0;
+	    }
+
+	    warnx("closing connection for child %d", child);
+	    kill(children[child].pid, SIGINT);
+	}
+	return 0;
+    }
     else if (strncmp(buf, "info", 4) == 0)
 	kill(0, SIGINFO);
+    else if (strncmp(buf, "quit", 4) == 0)
+	return -1;
 
     return 0;
 }
@@ -410,6 +427,7 @@ main(int argc, char *argv[])
     sa.sa_flags = 0;
     sigaction(SIGCHLD, &sa, NULL);
     sigaction(SIGINFO, &sa, NULL);
+    sigaction(SIGINT, &sa, NULL);
 
     /* one for stdin, one for each listening socket */
     if ((pollset=malloc(sizeof(*pollset)*(port_count+1))) == NULL)
@@ -419,6 +437,12 @@ main(int argc, char *argv[])
 	struct sockaddr_in raddr;
 	socklen_t raddrlen;
 	int new_sock;
+
+	/* terminate orderly */
+	if (sigint > 0) {
+	    warnx("closing connections and exiting");
+	    break;
+	}
 
 	/* clean up after dead children */
 	while (sigchld > 0)
@@ -474,7 +498,7 @@ main(int argc, char *argv[])
 		    continue;
 		}
 
-		(void)printf("Connection from %s/%d\n",
+		(void)printf("Connection to port %d from %s/%d\n", listen_port[i],
 			     inet_ntoa(raddr.sin_addr), ntohs(raddr.sin_port));
 		fflush(stdout);
 

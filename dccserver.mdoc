@@ -1,4 +1,4 @@
-.\" $NiH: dccserver.mdoc,v 1.13 2003/05/11 00:17:40 wiz Exp $
+.\" $NiH: dccserver.mdoc,v 1.14 2003/05/11 16:07:36 wiz Exp $
 .\"
 .\" Copyright (c) 2002, 2003 Thomas Klausner.
 .\" All rights reserved.
@@ -110,16 +110,22 @@ Please note that the
 .Dq \&:
 and the space are necessary.
 .Pp
-You can enter
-.Dq quit
-(without a prepended child ID)
-to close all connections and exit the program,
-and
-.Dq info
-to get an overview of the current connection state.
-.Pp
 Text coming from the remote clients will be shown prepended by their
 nickname and child ID.
+.Pp
+You can give
+.Nm
+commands by entering one of the following keywords without a child ID
+in front:
+.Bl -tag -width xclosexIDx
+.It Ic close X
+to close the connection with ID X, e.g.,
+.Ic close 3 .
+.It Ic info
+to get an overview of the current connection state.
+.It Ic quit
+to close all connections and exit the program.
+.El
 .Sh EXAMPLES
 Listen on ports 59 and 37334 as user
 .Dq yournick :
