@@ -1,3 +1,27 @@
+0.2.1:
+	0.3 pre-release -- do not redistribute, please.
+
+	Add dccsend program to send files to a remote dccserver.
+	Requested by Antti Aaltonen <antzu@iki.fi>.
+
+	Add lots of fflushes, some from Rudolf Polzer.
+
+	Strip paths from file name (some weird clients send them).
+	Requested by Athan <code@miggy.org>.
+
+	Remove superfluous seteuid call. Noted by Athan <code@miggy.org>
+
+	Mention client ID/client name in most places. Based on patches
+	from Rudolf Polzer <atfield@durchnull.de>.
+
+	Add -e/-i options for easy embedding in irssi. Idea from
+	from Rudolf Polzer <atfield@durchnull.de>.
+
+	Add "quit" command to exit dccserver. Idea from Rudolf
+	Polzer <atfield@durchnull.de>.
+
+	Some minor improvements, see ChangeLog.
+
 0.2:
 	Allow receiving more bytes than filesize; show a warning.
 	Could be useful when sender doesn't have the complete file when
