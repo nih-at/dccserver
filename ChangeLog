@@ -1,5 +1,7 @@
 2003-04-07  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
 
+	* Makefile.am, configure.ac: add and install dccsend man pages.
+
 	* dccsend.mdoc: add man page for dccsend.
 	* dccsend.man: generate.
 

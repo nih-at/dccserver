@@ -3,7 +3,7 @@ dnl Process this file with autoconf to produce a configure script.
 dnl init
 
 AC_PREREQ(2.57)
-AC_REVISION([$NiH: configure.ac,v 1.16 2003/04/04 13:44:06 wiz Exp $])
+AC_REVISION([$NiH: configure.ac,v 1.17 2003/04/07 09:36:18 wiz Exp $])
 AC_INIT([dccserver],[0.3],[tk@giga.or.at])
 AC_CONFIG_SRCDIR([dccserver.c])
 AC_CONFIG_HEADERS([config.h])
@@ -39,7 +39,7 @@ in
 	*) MANFMT=man;;
 esac
 
-AC_CONFIG_LINKS([dccserver.1:dccserver.${MANFMT}])
+AC_CONFIG_LINKS([dccserver.1:dccserver.${MANFMT} dccsend.1:dccsend.${MANFMT}])
 
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
