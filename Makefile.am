@@ -4,4 +4,4 @@ LDADD=@LIBOBJS@
 
 dccserver_SOURCES=dccserver.c
 
-EXTRA_DIST=	strlcpy.c README
+EXTRA_DIST=	err.c strlcpy.c warn.c warnx.c README

@@ -1,4 +1,4 @@
-/* $NiH: dccserver.c,v 1.18 2002/10/15 14:28:47 wiz Exp $ */
+/* $NiH: dccserver.c,v 1.19 2002/10/15 17:48:47 wiz Exp $ */
 /*-
  * Copyright (c) 2002 Thomas Klausner.
  * All rights reserved.
@@ -30,13 +30,17 @@
  * SUCH DAMAGE.
  */
   
+#include "config.h"
+
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#ifdef HAVE_ERR_H
 #include <err.h>
+#endif /* HAVE_ERR_H */
 #include <errno.h>
 #include <fcntl.h>
 #include <poll.h>
@@ -46,8 +50,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-
-#include "config.h"
 
 #define BACKLOG 10
 
