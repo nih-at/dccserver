@@ -1,5 +1,11 @@
 2003-05-12  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
 
+	* README.Darwin: removed, unneeded now.
+
+	* compile: needed for dccsend_CPPFLAGS.
+
+	* configure.ac: use #-comments instead of dnl. Looks nicer.
+
 	* COPYING: add copyright for lib/poll.[ch].
 
 	* configure.ac, Makefile.am, lib/: moved replacement functions to
