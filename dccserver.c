@@ -1,4 +1,4 @@
-/* $NiH: dccserver.c,v 1.30 2003/01/28 22:05:08 wiz Exp $ */
+/* $NiH: dccserver.c,v 1.31 2003/03/29 10:54:21 wiz Exp $ */
 /*-
  * Copyright (c) 2002, 2003 Thomas Klausner.
  * All rights reserved.
@@ -285,6 +285,7 @@ display_remote_line(const unsigned char *p)
 	p++;
     }
     putchar('\n');
+    fflush(stdout);
 }
 
 /* signal handler */
@@ -462,7 +463,7 @@ usage(void)
 
     fprintf(stderr, "%s: emulate mirc's /dccserver command\n\n"
 	    "Usage:\n"
-	    "%s [-n nickname] [-p port]\n"
+	    "%s [-hiv] [-n nickname] [-p port]\n"
 	    "Where port is the port on which %s should listen,\n"
 	    "and nickname the nick that should be used (defaults are 59 "
 	    "and 'dccserver').\n", prg, prg, prg);
@@ -659,6 +660,7 @@ main(int argc, char *argv[])
 
 	    (void)printf("Connection from %s/%d\n",
 			 inet_ntoa(raddr.sin_addr), ntohs(raddr.sin_port));
+	    fflush(stdout);
 
 	    /* do something */
 	    handle_connection(new_sock, sock);

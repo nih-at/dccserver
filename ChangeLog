@@ -1,5 +1,8 @@
 2003-03-29  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
 
+	* dccserver.c (main): Add fflush(stdout)
+	(display_remote_line): here too. From Rudolf Polzer.
+
 	* dccserver.man: regen for -i
 
 	* dccserver.mdoc: document -i option
@@ -9,6 +12,7 @@
 	(converse_with_client): move display code to ...
 	(display_remote_line): new function, and honor option to display
 	control characters.
+	(usage): mention -i here too.
 	Idea for -i from Rudolf Polzer.
 
 2003-01-28  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
