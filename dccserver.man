@@ -1,6 +1,6 @@
 .\" Converted with mdoc2man 0.2
-.\" from NiH: dccserver.mdoc,v 1.12 2003/04/11 09:55:16 wiz Exp 
-.\" $NiH: dccserver.mdoc,v 1.12 2003/04/11 09:55:16 wiz Exp $
+.\" from NiH: dccserver.mdoc,v 1.13 2003/05/11 00:17:40 wiz Exp 
+.\" $NiH: dccserver.mdoc,v 1.13 2003/05/11 00:17:40 wiz Exp $
 .\"
 .\" Copyright (c) 2002, 2003 Thomas Klausner.
 .\" All rights reserved.
@@ -115,7 +115,10 @@ and the space are necessary.
 You can enter
 ``quit''
 (without a prepended child ID)
-to close all connections and exit the program.
+to close all connections and exit the program,
+and
+``info''
+to get an overview of the current connection state.
 .PP
 Text coming from the remote clients will be shown prepended by their
 nickname and child ID.
@@ -148,8 +151,6 @@ was written by
 Thomas Klausner <tk@giga.or.at.>
 .SH "BUGS"
 Get and Fserve modes are not yet supported.
-.PP
-There are no timeouts yet.
 .SH "SECURITY CONSIDERATIONS"
 MIRC's default port is 59.
 To bind to ports below 1024, one needs root privileges; for this reason
