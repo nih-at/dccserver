@@ -1,5 +1,11 @@
 2003-04-11  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
 
+	* dccserver.c: allow listening on multiple ports.
+	(main): fix -v error message.
+
+	* dccserver.mdoc: document that listening on multiple ports works
+	now.
+
 	* dccserver.c (main): do chroot after option parsing, should be
 	early enough and avoid an error message in case of -h or -v.
 
