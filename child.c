@@ -1,4 +1,4 @@
-/* $NiH: child.c,v 1.6 2003/05/11 00:37:44 wiz Exp $ */
+/* $NiH: child.c,v 1.7 2003/05/11 02:03:49 wiz Exp $ */
 /*-
  * Copyright (c) 2003 Thomas Klausner.
  * All rights reserved.
@@ -709,7 +709,6 @@ child_loop(int sock, int id)
 	    break;
 
 	default:
-	    tell_client(sock, 151, NULL);
 	    break;
 	}
 
