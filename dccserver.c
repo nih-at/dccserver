@@ -1,4 +1,4 @@
-/* $NiH: dccserver.c,v 1.59 2003/05/11 02:40:13 wiz Exp $ */
+/* $NiH: dccserver.c,v 1.60 2003/05/11 14:56:09 wiz Exp $ */
 /*-
  * Copyright (c) 2002, 2003 Thomas Klausner.
  * All rights reserved.
@@ -142,6 +142,43 @@ handle_connection(int sock)
 }
 
 void
+collect_child(void)
+{
+    int i;
+    int status;
+    pid_t deadpid;
+
+    while (((deadpid=waitpid(-1, &status, WNOHANG)) != -1)
+	   && deadpid != 0) {
+	sigchld = 0;
+	for (i=0; i<NO_OF_CHILDREN; i++) {
+	    if (children[i].pid == deadpid) {
+		children[i].pid = -1;
+		close(children[i].sock);
+		warnx("child %d died", i);
+		break;
+	    }
+	}
+	if (i == NO_OF_CHILDREN)
+	    warnx("child %ld found dead, but unknown", (long)deadpid);
+    }
+}
+
+void
+kill_children(void)
+{
+    int i;
+
+    for (i=0; i<NO_OF_CHILDREN; i++) {
+	if (children[i].pid != -1)
+	    kill(children[i].pid, SIGINT);
+
+	while (sigchld > 0)
+	    collect_child();
+    }
+}
+
+void
 usage(const char *prg)
 {
 
@@ -273,6 +310,7 @@ start_listening(void)
 
     return;
 }
+
 /*
  * set up server listening on connections and input from user, and
  * call appropriate functions to handle them
@@ -383,25 +421,8 @@ main(int argc, char *argv[])
 	int new_sock;
 
 	/* clean up after dead children */
-	while (sigchld > 0) {
-	    int status;
-	    pid_t deadpid;
-
-	    while (((deadpid=waitpid(-1, &status, WNOHANG)) != -1)
-		   && deadpid != 0) {
-		sigchld = 0;
-		for (i=0; i<NO_OF_CHILDREN; i++) {
-		    if (children[i].pid == deadpid) {
-			children[i].pid = -1;
-			close(children[i].sock);
-			warnx("child %d died", i);
-			break;
-		    }
-		}
-		if (i == NO_OF_CHILDREN)
-		    warnx("child %ld found dead, but unknown", (long)deadpid);
-	    }
-	}
+	while (sigchld > 0)
+	    collect_child();
 
 	/* display status if requested */
 	if (siginfo > 0) {
@@ -463,5 +484,6 @@ main(int argc, char *argv[])
 	}
     }
 
+    kill_children();
     return 0;
 }
