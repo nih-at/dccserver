@@ -1,8 +1,8 @@
 .\" Converted with mdoc2man 0.2
-.\" from NiH: dccserver.mdoc,v 1.1 2002/10/16 13:55:32 wiz Exp 
-.\" $NiH: dccserver.mdoc,v 1.1 2002/10/16 13:55:32 wiz Exp $
+.\" from NiH: dccserver.mdoc,v 1.2 2003/01/22 16:50:46 wiz Exp 
+.\" $NiH: dccserver.mdoc,v 1.2 2003/01/22 16:50:46 wiz Exp $
 .\"
-.\" Copyright (c) 2002 Thomas Klausner.
+.\" Copyright (c) 2002, 2003 Thomas Klausner.
 .\" All rights reserved.
 .\"
 .\" Redistribution and use in source and binary forms, with or without
@@ -13,10 +13,10 @@
 .\" 2. Redistributions in binary form must reproduce the above
 .\"    copyright notice, this list of conditions and the following
 .\"    disclaimer in the documentation and/or other materials provided
-.\"    with the distribution. 
+.\"    with the distribution.
 .\" 3. The name of the author may not be used to endorse or promote
 .\"    products derived from this software without specific prior
-.\"    written permission.  
+.\"    written permission.
 .\"
 .\" THIS SOFTWARE IS PROVIDED BY THOMAS KLAUSNER ``AS IS'' AND ANY
 .\" EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -30,14 +30,14 @@
 .\" OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
 .\" OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
-.TH DCCSERVER 1 "October 16, 2002" NiH
+.TH DCCSERVER 1 "January 22, 2003" NiH
 .SH "NAME"
 dccserver \- simulate MIRC's /dccserver command
 .SH "SYNOPSIS"
 .B dccserver
-[\fB\-hv\fR]
-[\fB\-n\fR \fBnickname\fR]
-[\fB\-p\fR \fBport\fR]
+[\fB-hv\fR]
+[\fB-n\fR \fBnickname\fR]
+[\fB-p\fR \fBport\fR]
 .SH "DESCRIPTION"
 .B dccserver
 aims to provide the functions of MIRC's /dccserver command.
@@ -51,10 +51,10 @@ are done.
 Supported options:
 .RS
 .TP 15
-\fB\-h\fR
+\fB-h\fR
 Display a short help message.
 .TP 15
-\fB\-n\fR \fBnickname\fR
+\fB-n\fR \fBnickname\fR
 Set nickname used in handshake to
 \fBnickname.\fR
 Should be the same nickname that you use on IRC, otherwise most
@@ -62,29 +62,33 @@ clients will complain and close the connection.
 Defaults to
 ``dccserver''.
 .TP 15
-\fB\-p\fR \fBport\fR
+\fB-p\fR \fBport\fR
 Listen for connections on port
 \fBport.\fR
 Defaults to 59, since that is MIRC's default port.
-Please note that you have to be root to bind to ports below 1024.
+Please note that you have to have root privileges to bind to ports
+below 1024.
+See
+section SECURITY CONSIDERATIONS
+below.
 .TP 15
-\fB\-v\fR
+\fB-v\fR
 Display program name and version number.
 .RE
 .PP
 After a client has connected, you can send commands to it manually.
 This is useful for chats or fserves.
 The syntax is
-.Dq <nn>: <text>
+``<nn>: <text>''
 where
-.Dq <nn>
+``<nn>''
 is the number of the child, and
-.Dq <text>
+``<text>''
 the text you want to send.
 For example:
-.Dl 0: dir
+``0:\ dir''.
 Please note that the
-.Dq \&:
+``:''
 and the space are necessary.
 .PP
 Text coming from the remote clients will be shown prepended by their
@@ -98,8 +102,24 @@ Get and Fserve modes are not yet supported.
 .PP
 There are no timeouts yet.
 .PP
-The program should probably be setuid to handle ports below 1024
-better.
-.PP
 It is not easy to see which child number corresponds to which remote
 client (nickname).
+.SH "SECURITY CONSIDERATIONS"
+MIRC's default port is 59.
+To bind to ports below 1024, one needs root privileges; for this reason
+.B dccserver
+is installed setuid root.
+To limit damage done if in case of trouble,
+.B dccserver
+chroot(2)s
+itself in the current directory and drops the setuid privileges as soon
+as possible.
+.PP
+Alternatively, you can remove the setuid bit from
+.B dccserver
+with
+``\fBchmod u-s /path/to/dccserver\fR''
+with the limitation that you will only be able to use
+.B dccserver
+on ports above 1024, and you won't get the effect of
+chroot(2).
