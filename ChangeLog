@@ -1,9 +1,14 @@
 2003-04-12  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
 
+	* dccsend.c (send_file): remove two unused variables.
+	(parse_send_line): remove unused variable.
+	(main): remove tthree unused variables.
+	(global): remove unused variable.
+
 	* dccserver.c (get_file): show time taken by transfer and transfer
 	rate.
-	(converse_with_client): remove superfluous variable.
-	(handle_input): remove superfluous variable.
+	(converse_with_client): remove unused variable.
+	(handle_input): remove unused variable.
 	(create_and_bind_socket): fix format string.
 
 2003-04-11  Thomas Klausner  <wiz@danbala.tuwien.ac.at>

@@ -1,4 +1,4 @@
-/* $NiH: dccsend.c,v 1.10 2003/04/07 11:55:17 wiz Exp $ */
+/* $NiH: dccsend.c,v 1.11 2003/04/07 12:00:34 wiz Exp $ */
 /*-
  * Copyright (c) 2003 Thomas Klausner.
  * All rights reserved.
@@ -69,7 +69,6 @@ void warnx(const char *, ...);
 typedef enum state_e { ST_NONE, ST_CHAT, ST_FSERVE, ST_SEND, ST_GET,
 		       ST_END } state_t;
 
-static char filename[1024];
 static long offset;
 static char nickname[1024];
 static char remotenick[100];
@@ -149,8 +148,6 @@ send_file(FILE *fp, char *filename, long filesize)
     char buf[8192];
     int len;
     long rem;
-    int out;
-    struct stat sb;
     FILE *fin;
 
     if (filesize < offset) {
@@ -218,7 +215,7 @@ strip_path(char *p)
 int
 parse_send_line(char *line)
 {
-    char *p, *q, *endptr;
+    char *p, *endptr;
 
     if ((p=strchr(line+4, ' ')) == NULL)
 	return -1;
@@ -296,9 +293,7 @@ int
 main(int argc, char *argv[])
 {
     char *endptr;
-    int sock, sock_opt;
     int c;
-    int pollret;
     long port;
     struct stat sb;
     int s;
