@@ -1,6 +1,6 @@
 .\" Converted with mdoc2man 0.2
-.\" from NiH: dccserver.mdoc,v 1.13 2003/05/11 00:17:40 wiz Exp 
-.\" $NiH: dccserver.mdoc,v 1.13 2003/05/11 00:17:40 wiz Exp $
+.\" from NiH: dccserver.mdoc,v 1.14 2003/05/11 16:07:36 wiz Exp 
+.\" $NiH: dccserver.mdoc,v 1.14 2003/05/11 16:07:36 wiz Exp $
 .\"
 .\" Copyright (c) 2002, 2003 Thomas Klausner.
 .\" All rights reserved.
@@ -30,7 +30,7 @@
 .\" OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
 .\" OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
-.TH DCCSERVER 1 "April 11, 2003" NiH
+.TH DCCSERVER 1 "May 11, 2003" NiH
 .SH "NAME"
 dccserver \- simulate MIRC's /dccserver command
 .SH "SYNOPSIS"
@@ -47,6 +47,9 @@ Fserve and Get mode are not yet supported.
 .PP
 All connections are accepted; some simple checks on allowed file names
 are done.
+During connectione establishment, there is a 15 seconds timeout; during
+transfers, it is 2 minutes.
+Chats have no timeout.
 .PP
 Supported options:
 .RS
