@@ -1,4 +1,4 @@
-/* $NiH: dccserver.c,v 1.42 2003/04/05 21:51:28 wiz Exp $ */
+/* $NiH: dccserver.c,v 1.43 2003/04/07 12:00:34 wiz Exp $ */
 /*-
  * Copyright (c) 2002, 2003 Thomas Klausner.
  * All rights reserved.
@@ -561,20 +561,6 @@ main(int argc, char *argv[])
     port = 59;
     prg = argv[0];
 
-    /* trying to imprison dccserver in a chroot */
-    if (chroot(".") == -1) {
-	if (errno == EPERM) {
-	    fputs("dccserver is not setuid root.\n"
-		  "For binding below port 1024 (like the default port 59),\n"
-		  "root privileges are needed.  Additionally, dccserver\n"
-		  "will chroot(2) itself to the current directory to reduce\n"
-		  "effect of any exploits.\n", stderr);
-	}
-	warn("can't chroot");
-    }
-    else if (chdir("/") == -1)
-	warn("can't chdir to \"/\" in chroot");
-
     while ((c=getopt(argc, argv, "ehin:p:v")) != -1) {
 	switch(c) {
 	case 'h':
@@ -610,6 +596,20 @@ main(int argc, char *argv[])
 	    exit(1);
 	}
     }
+
+    /* trying to imprison dccserver in a chroot */
+    if (chroot(".") == -1) {
+	if (errno == EPERM) {
+	    fputs("dccserver is not setuid root.\n"
+		  "For binding below port 1024 (like the default port 59),\n"
+		  "root privileges are needed.  Additionally, dccserver\n"
+		  "will chroot(2) itself to the current directory to reduce\n"
+		  "effect of any exploits.\n", stderr);
+	}
+	warn("can't chroot");
+    }
+    else if (chdir("/") == -1)
+	warn("can't chdir to \"/\" in chroot");
 
     if ((sock=socket(AF_INET, SOCK_STREAM, 0)) == -1)
 	err(1, "can't open socket");
