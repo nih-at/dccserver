@@ -1,4 +1,6 @@
-2003-01-22  Thomas Klausner  <wiz@dmath5.geometrie.tuwien.ac.at>
+2003-01-22  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
+
+	* configure.ac: Bump version to 0.2.
 
 	* dccserver.mdoc: update for using chroot and setuid.
 	* dccserver.man: regen.
