@@ -1,4 +1,4 @@
-/* $NiH: child.c,v 1.9 2003/05/11 14:56:40 wiz Exp $ */
+/* $NiH: child.c,v 1.10 2003/05/11 16:05:13 wiz Exp $ */
 /*-
  * Copyright (c) 2003 Thomas Klausner.
  * All rights reserved.
@@ -709,9 +709,15 @@ child_loop(int sock, int id)
 	    break;
 
 	case ST_CHAT:
+	    if (siginfo) {
+		siginfo = 0;
+		warnx("child %d: chatting with %s", id, partner);
+	    }
 	    switch (fdgets(sock, line, sizeof(line))) {
 	    case -1:
-		/* error */
+		if (errno == EINTR)
+		    break;
+		/* FALLTHROUGH */
 	    case 0:
 		/* connection closed */
 		state = ST_END;
