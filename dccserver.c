@@ -1,4 +1,4 @@
-/* $NiH: dccserver.c,v 1.21 2002/10/15 18:52:22 wiz Exp $ */
+/* $NiH: dccserver.c,v 1.22 2002/10/15 22:12:22 dillo Exp $ */
 /*-
  * Copyright (c) 2002 Thomas Klausner.
  * All rights reserved.
@@ -77,7 +77,7 @@ child_t children[NO_OF_CHILDREN];
 #endif
 
 void
-say(unsigned char *line, FILE *fp)
+say(const char *line, FILE *fp)
 {
     fwrite(line, strlen(line), 1, fp);
     fflush(fp);
@@ -179,7 +179,7 @@ get_file(FILE *fp)
 
 /* parse line given by remote client */
 int
-parse_get_line(unsigned char *line)
+parse_get_line(char *line)
 {
     char *p, *q, *endptr;
 
@@ -222,7 +222,7 @@ sig_handle(int signal)
 
 /* parse line from client, update state machine, and reply */
 state_t
-converse_with_client(FILE *fp, state_t state, unsigned char *line)
+converse_with_client(FILE *fp, state_t state, char *line)
 {
     state_t ret;
     unsigned char *p;
@@ -277,7 +277,7 @@ converse_with_client(FILE *fp, state_t state, unsigned char *line)
 
     case ST_CHAT:
 	printf("<%s> ", partner);
-	p = line;
+	p = (unsigned char *)line;
 	while (*p) {
 	    if (*p > 0x7f) {
 		putchar('.');
@@ -353,8 +353,8 @@ void
 communicate_with_client(int sock)
 {
     FILE *fp;
-    unsigned char buf[8192];
-    unsigned char *p;
+    char buf[8192];
+    char *p;
     state_t state;
 
     state = ST_NONE;
