@@ -1,4 +1,4 @@
-/* $NiH: dccserver.c,v 1.16 2002/10/15 13:36:52 wiz Exp $ */
+/* $NiH: dccserver.c,v 1.17 2002/10/15 13:53:08 wiz Exp $ */
 /*-
  * Copyright (c) 2002 Thomas Klausner.
  * All rights reserved.
@@ -30,6 +30,7 @@
  * SUCH DAMAGE.
  */
   
+#include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
