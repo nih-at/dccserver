@@ -1,4 +1,4 @@
-/* $NiH$ */
+/* $NiH: dccsend.c,v 1.1 2003/04/03 15:50:54 wiz Exp $ */
 /*-
  * Copyright (c) 2003 Thomas Klausner.
  * All rights reserved.
@@ -43,6 +43,7 @@
 #endif /* HAVE_ERR_H */
 #include <errno.h>
 #include <fcntl.h>
+#include <netdb.h>
 #include <poll.h>
 #include <signal.h>
 #include <stdarg.h>
@@ -51,11 +52,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#ifndef HAVE_SOCKLEN_T
-typedef unsigned int socklen_t;
-#endif
-
-#ifndef HAVE_STRLZCPY
+#ifndef HAVE_STRLCPY
 size_t strlcpy(char *, const char *, size_t);
 #endif
 
@@ -76,28 +73,32 @@ void warnx(const char *, ...);
 typedef enum state_e { ST_NONE, ST_CHAT, ST_FSERVE, ST_SEND, ST_GET,
 		       ST_END } state_t;
 
-static int echo_input;
 static char filename[1024];
-static long filesize;
-static int filter_control_chars;
+static long offset;
 static char nickname[1024];
-static char partner[100];
+static char remotenick[100];
 static const char *prg;
 
 int
-connect_to_server(char *host, char *port)
+connect_to_server(char *host, int port)
 {
     struct addrinfo hints, *res0, *res;
     int error, s;
     char *cause = NULL;
+    char portstr[10];
+
+    if (port < 0 || port > 65535)
+	return -1;
+    sprintf(portstr, "%d", port);
     
     memset(&hints, 0, sizeof(hints));
     hints.ai_family = PF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
     
-    if ((error=getaddrinfo(host, port, &hints, &res0)) != 0) {
-	errx(1, "cannot get host ``%s'' port %s: %s",
-	     host, port, gai_strerror(error));
+    if ((error=getaddrinfo(host, portstr, &hints, &res0)) != 0) {
+	warnx(1, "cannot get host ``%s'' port %d: %s",
+	      host, port, gai_strerror(error));
+	return -1;
     }
 
     s = -1;
@@ -119,19 +120,11 @@ connect_to_server(char *host, char *port)
 	break;
     }
     if (s < 0)
-	err(1, "cannot %s", cause);
+	warn(1, "cannot %s", cause);
 
     freeaddrinfo(res0);
 
     return s;
-}
-
-void
-say(const char *line, FILE *fp)
-{
-    fwrite(line, strlen(line), 1, fp);
-    fflush(fp);
-    return;
 }
 
 void
@@ -152,9 +145,9 @@ tell_client(FILE *fp, int retcode, char *fmt, ...)
     return;
 }
 
-/* get and save file from network */
+/* send file to network */
 int
-send_file(int id, FILE *fp)
+send_file(FILE *fp, char *filename, int filesize)
 {
     char buf[8192];
     int len;
@@ -162,70 +155,47 @@ send_file(int id, FILE *fp)
     int out;
     struct stat sb;
     long offset;
-    int exceed_warning_shown = 0;
+    FILE *fin;
 
-    if (stat(filename, &sb) == 0) {
-	/* file exists */
-	if ((sb.st_mode & S_IFMT) != S_IFREG) {
-	    /* XXX: rename */
-	    tell_client(fp, 151, NULL);
-	    return -1;
-	}
-	/* append (resume) */
-	if ((sb.st_size > 0) && (sb.st_size < filesize)) {
-	    offset = sb.st_size;
-	    warnx("file exists, resuming after %ld bytes", offset);
-	}
-	else {
-	    /* XXX: rename */
-	    tell_client(fp, 151, NULL);
-	    return -1;
-	}
-	if ((out=open(filename, O_WRONLY|O_APPEND, 0644)) == -1) {
-	    warn("can't open file `%s' for appending",  filename);
-	    tell_client(fp, 151, NULL);
+    if (filesize < offset) {
+	warnx("remote requested part after EOF (%d < %d)", filesize, offset);
+	return -1;
+    }
+
+    if ((fin=fopen(filename, "r")) == NULL) {
+	warn("can't open file %s", filename);
+	return -1;
+    }
+
+    if (offset > 0) {
+	if (fseek(fin, offset, SEEK_SET) != offset) {
+	    warn("can't seek to %ld", offset);
+	    fclose(fin);
 	    return -1;
 	}
     }
-    else {
-	offset = 0;
-	if ((out=open(filename, O_WRONLY|O_CREAT|O_EXCL, 0644)) == -1) {
-	    warn("can't open file `%s' for writing",  filename);
-	    tell_client(fp, 151, NULL);
-	    return -1;
-	}
-    }
-
-    tell_client(fp, 121, "%ld", offset);
 
     /* get file data into local file */
     rem = filesize - offset;
-    while((len=fread(buf, 1, sizeof(buf), fp)) > 0) {
-	if (write(out, buf, len) < len) {
-	    warn("write error on `%s'", filename);
-	    close(out);
+    while((len=fread(buf, 1, sizeof(buf), fin)) > 0) {
+	if (fwrite(buf, 1, len, fp) < len) {
+	    warn("write error on network");
+	    fclose(fin);
 	    return -1;
 	}
 	rem -= len;
-
-	if (rem < 0 && exceed_warning_shown == 0) {
-	    exceed_warning_shown = 1;
-	    warnx("getting more than %ld bytes for `%s'",
-		  filesize, filename);
-	}
     }
 
-    if (close(out) == -1)
-	warn("close error for `%s'", filename);
+    (void)fclose(fin);
 
     if (rem <= 0) {
-	warnx("`%s' from %d: %s complete (%ld/%ld bytes got, %ld new)", filename,
-	      id, partner, filesize-rem, filesize, filesize-rem-offset);
+	warnx("sending `%s' to %s complete: %ld/%ld bytes sent, %ld new)",
+	      filename, remotenick, filesize-rem, filesize, filesize-rem-offset);
 	return 0;
     }
     else {
-	warnx("client %d: %s closed connection for `%s' (%ld/%ld bytes got, "
-	      "%ld new)", filename, id, partner, filesize-rem, filesize,
+	warnx("%s closed connection for `%s' (%ld/%ld bytes sent, "
+	      "%ld new)", remotenick, filename, filesize-rem, filesize,
 	      filesize-offset-rem);
     }    
 
@@ -249,116 +219,27 @@ strip_path(char *p)
 
 /* parse line given by remote client */
 int
-parse_get_line(char *line)
+parse_send_line(char *line)
 {
     char *p, *q, *endptr;
 
     if ((p=strchr(line+4, ' ')) == NULL)
 	return -1;
     *p = '\0';
-    strlcpy(partner, line+4, sizeof(partner));
+    strlcpy(remotenick, line+4, sizeof(remotenick));
+    *p++ = ' ';
 
-    q = p+1;
-    if ((p=strchr(q, ' ')) == NULL)
-	return -1;
-    *p = '\0';
-
-    filesize = strtol(q, &endptr, 10);
-    if (*q == '\0' || *endptr != '\0' || (filesize <=0))
-	return -1;
-
-    /* remove path components in file name */
-    q = strip_path(p+1);
-    strlcpy(filename, q, sizeof(filename));
-    if (strlen(filename) == 0)
+    offset = strtol(p, &endptr, 10);
+    if (*p == '\0' || (*endptr != '\0' && *endptr != '\n'
+		       && *endptr != '\r') || (offset <0))
 	return -1;
 
     return 0;
 }    
 
-/* parse line from server, update state machine, and reply */
-state_t
-converse_with_server(FILE *fp, state_t state, char *line, int id)
-{
-    state_t ret;
-    unsigned char *p;
-
-    ret = state;
-    switch(state) {
-    case ST_NONE:
-	
-	if (strncmp("100 ", line, 4) == 0) {
-	    strlcpy(partner, line+4, sizeof(partner));
-	    tell_client(fp, 101, NULL);
-	    warnx("starting chat with %d: %s", id, partner);
-	    ret = ST_CHAT;
-	}
-	else if (strncmp("110 ", line, 4) == 0) {
-	    strlcpy(partner, line+4, sizeof(partner));
-#ifdef NOT_YET
-	    tell_client(fp, 111, NULL);
-	    warnx("starting fserve session with %d: %s", id, partner);
-	    ret = ST_FSERVE;
-#endif
-	    tell_client(fp, 151, NULL);
-	    ret = ST_END;
-	}
-	else if (strncmp("120 ", line, 4) == 0) {
-	    /* Client sending file */
-	    if (parse_get_line(line) < 0) {
-		tell_client(fp, 151, NULL);
-		ret = ST_END;
-		break;
-	    }
-
-	    warnx("getting file `%s' (%ld bytes) from %d: %s", filename,
-		  filesize, id, partner);
-
-	    get_file(id, fp);
-	    ret = ST_END;
-	}
-	else if (strncmp("130 ", line, 4) == 0) {
-#ifdef NOT_YET
-	    tell_client(fp, 131, NULL);
-	    ret = ST_GET;
-#endif
-	    tell_client(fp, 151, NULL);
-	    ret = ST_END;
-	}
-	else {
-	    tell_client(fp, 151, NULL);
-	    ret = ST_END;
-	    break;
-	}
-	break;
-
-    case ST_CHAT:
-	display_remote_line(id, line);
-	break;
-
-    case ST_FSERVE:
-	if (strcasecmp(line, "quit") == 0 ||
-	    strcasecmp(line, "exit") == 0) {
-	    say("Goodbye!", fp);
-	    ret = ST_END;
-	}
-	break;
-    case ST_GET:
-	break;   
-
-    case ST_SEND:
-    case ST_END:
-    default:
-	    tell_client(fp, 151, NULL);
-	    ret = ST_END;
-    }
-
-    return ret;
-}
-
 /* main child routine: read line from client and call parser */
 void
-communicate_with_client(int sock, char *filename)
+communicate_with_server(int sock, char *filename, size_t filesize)
 {
     FILE *fp;
     char buf[8192];
@@ -370,28 +251,29 @@ communicate_with_client(int sock, char *filename)
 	(void)close(sock);
 	err(1, "[child] can't fdopen");
     }
-
     
-    say("
-    while ((state != ST_END) && (fgets(buf, sizeof(buf), fp) != NULL)) {
-	if ((*buf == '\n') || (*buf == '\r')) {
-	    /* empty line */
-	    *buf = '\0';
+    tell_client(fp, 120, "%ld %s", filesize, strip_path(filename));
+    /* XXX: one chance only */
+    if (fgets(buf, sizeof(buf), fp) != NULL) {
+	if (strncmp("121 ", buf, 4) == 0) {
+	    /* accepted */
+	    if (parse_send_line(buf) < 0) {
+		warnx("invalid reply: %s", buf);
+	    }
+	    else /* XXX: verify remote user */
+		send_file(fp, filename, filesize);
 	}
-	else if (strtok(buf, "\n\r") == NULL) {
-	    warn("client sent too long line");
-	    tell_client(fp, 151, NULL);
-	    state = ST_END;
-	    continue;
+	else if (strncmp("150 ", buf, 4) == 0)
+	    warnx("remote unavailable");
+	else if (strncmp("151 ", buf, 4) == 0)
+	    warnx("remote denied");
+	else {
+	    warnx("invalid reply: %s", buf);
 	}
-	state = converse_with_client(fp, state, buf);
     }
 
-    if (state != ST_END)
-	warnx("closing connection with %s", partner);
-
     (void)fclose(fp);
-    exit(0);
+    return;
 }
 
 void
@@ -421,13 +303,13 @@ main(int argc, char *argv[])
     int c;
     int pollret;
     long port;
-    char *portstr;
     struct sockaddr_in laddr;
     struct pollfd pollset[2];
+    struct stat sb;
+    int s;
 
     strlcpy(nickname, "dccserver", sizeof(nickname));
     port = 59;
-    portstr = "59";
     prg = argv[0];
 
     while ((c=getopt(argc, argv, "hn:p:r:v")) != -1) {
@@ -440,7 +322,6 @@ main(int argc, char *argv[])
 	    break;
 
 	case 'p':
-	    portstr = optarg;
 	    port = strtol(optarg, &endptr, 10);
 	    if (*optarg == '\0' || *endptr != '\0')
 		usage();
@@ -462,16 +343,24 @@ main(int argc, char *argv[])
 	}
     }
 
-    if (optind < argc - 2)
-	err(1, "not enough arguments (need host and one filename)");
-
     if (optind > argc - 2)
-	err(1, "too many arguments (need host and one filename)");
+	errx("not enough arguments (need host and one filename)");
 
-    /* XXX: verify filename */
-    s = connect_to_server(argv[optind++], portstr);
+    if (optind < argc - 2)
+	errx("too many arguments (need host and one filename)");
 
-    communicate_with_server(s, argv[optind++]);
+    /* verify filename */
+    if (stat(argv[optind+1], &sb) == 0) {
+	/* file exists */
+	if ((sb.st_mode & S_IFMT) != S_IFREG)
+	    errx(1, "not a regular file: %s", argv[optind+1]);
+    }
+    else
+	errx(1, "file does not exist: %s", argv[optind+1]);
+
+    s = connect_to_server(argv[optind++], port);
+
+    communicate_with_server(s, argv[optind++], sb.st_size);
 
     return 0;
 }
