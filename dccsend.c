@@ -1,4 +1,4 @@
-/* $NiH: dccsend.c,v 1.1 2003/04/03 15:50:54 wiz Exp $ */
+/* $NiH: dccsend.c,v 1.2 2003/04/04 12:28:20 wiz Exp $ */
 /*-
  * Copyright (c) 2003 Thomas Klausner.
  * All rights reserved.
@@ -32,20 +32,18 @@
   
 #include "config.h"
 
+#if 0
 #include <sys/types.h>
-#include <sys/socket.h>
-#include <sys/stat.h>
 #include <sys/wait.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#endif
+#include <sys/socket.h>
+#include <sys/stat.h>
 #ifdef HAVE_ERR_H
 #include <err.h>
 #endif /* HAVE_ERR_H */
-#include <errno.h>
-#include <fcntl.h>
 #include <netdb.h>
-#include <poll.h>
-#include <signal.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -96,7 +94,7 @@ connect_to_server(char *host, int port)
     hints.ai_socktype = SOCK_STREAM;
     
     if ((error=getaddrinfo(host, portstr, &hints, &res0)) != 0) {
-	warnx(1, "cannot get host ``%s'' port %d: %s",
+	warnx("cannot get host ``%s'' port %d: %s",
 	      host, port, gai_strerror(error));
 	return -1;
     }
@@ -120,7 +118,7 @@ connect_to_server(char *host, int port)
 	break;
     }
     if (s < 0)
-	warn(1, "cannot %s", cause);
+	warn("cannot %s", cause);
 
     freeaddrinfo(res0);
 
@@ -303,8 +301,6 @@ main(int argc, char *argv[])
     int c;
     int pollret;
     long port;
-    struct sockaddr_in laddr;
-    struct pollfd pollset[2];
     struct stat sb;
     int s;
 
@@ -344,10 +340,10 @@ main(int argc, char *argv[])
     }
 
     if (optind > argc - 2)
-	errx("not enough arguments (need host and one filename)");
+	errx(1, "not enough arguments (need host and one filename)");
 
     if (optind < argc - 2)
-	errx("too many arguments (need host and one filename)");
+	errx(1, "too many arguments (need host and one filename)");
 
     /* verify filename */
     if (stat(argv[optind+1], &sb) == 0) {
@@ -359,6 +355,9 @@ main(int argc, char *argv[])
 	errx(1, "file does not exist: %s", argv[optind+1]);
 
     s = connect_to_server(argv[optind++], port);
+
+    if (s < 0)
+	return 1;
 
     communicate_with_server(s, argv[optind++], sb.st_size);
 
