@@ -1,3 +1,7 @@
+2003-04-15  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
+
+	* dccserver.c (get_file): add warning in an error case.
+
 2003-04-12  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
 
 	* dccsend.c (send_file): remove two unused variables.

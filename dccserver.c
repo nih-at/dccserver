@@ -1,4 +1,4 @@
-/* $NiH: dccserver.c,v 1.45 2003/04/11 09:55:15 wiz Exp $ */
+/* $NiH: dccserver.c,v 1.46 2003/04/12 13:34:50 wiz Exp $ */
 /*-
  * Copyright (c) 2002, 2003 Thomas Klausner.
  * All rights reserved.
@@ -146,7 +146,7 @@ get_file(int id, FILE *fp)
     if (stat(filename, &sb) == 0) {
 	/* file exists */
 	if ((sb.st_mode & S_IFMT) != S_IFREG) {
-	    /* XXX: rename */
+	    warnx("existing directory entry for `%s' not a file", filename);
 	    tell_client(fp, 151, NULL);
 	    return -1;
 	}
