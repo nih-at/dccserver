@@ -1,3 +1,7 @@
+2003-05-11  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
+
+	* dccserver.c, child.c: moved the child code to child.c.
+
 2003-05-06  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
 
 	* dccserver.c (sig_handle): rename variable to avoid shadowing.

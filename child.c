@@ -1,4 +1,4 @@
-/* $NiH: io.c,v 1.4 2003/05/10 22:58:03 wiz Exp $ */
+/* $NiH: child.c,v 1.5 2003/05/11 00:16:36 wiz Exp $ */
 /*-
  * Copyright (c) 2003 Thomas Klausner.
  * All rights reserved.
@@ -30,28 +30,10 @@
  * SUCH DAMAGE.
  */
 
-#include "config.h"
+#include "dccserver.h"
 
 #include <sys/stat.h>
 #include <sys/time.h>
-#ifdef HAVE_ERR_H
-#include <err.h>
-#endif /* HAVE_ERR_H */
-#include <errno.h>
-#include <fcntl.h>
-#ifdef HAVE_POLL_H
-#include <poll.h>
-#elif HAVE_SYS_POLL_H
-#include <sys/poll.h>
-#else
-#warning Neither poll.h nor sys/poll.h found -- compilation will probably fail.
-#warning In that case, read the included README.Darwin.
-#endif /* HAVE_POLL_H || HAVE_SYS_POLL_H */
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
 
 struct transfer_state {
     char *filename;
@@ -65,14 +47,9 @@ struct transfer_state {
     struct timeval lastdata;
 };
 
-/* XXX: duplicate */
-typedef enum state_e { ST_NONE, ST_CHAT, ST_FSERVE, ST_SEND, ST_GET,
-		       ST_GETFILE, ST_END } state_t;
-extern char nickname[];
 char partner[100];
 extern void display_remote_line(int, const unsigned char *);
 extern char *strip_path(char *);
-extern volatile int siginfo;
 
 /* maximum line length accepted from remote */
 #define BUFSIZE 4096
@@ -106,6 +83,84 @@ data_available(int fd, int direction, int timeout)
     pollset[0].revents = 0;
 
     return poll(pollset, 1, timeout);
+}
+
+
+/* some fserves incorrectly include the complete path -- */
+/* strip it off */
+char *
+strip_path(char *p)
+{
+    char *q;
+
+    if ((q=strrchr(p, '/')) != NULL)
+	p = ++q;
+    if ((q=strrchr(p, '\\')) != NULL)
+	p = ++q;
+
+    return p;
+}
+
+
+/* display line given from remote; filter out some characters */
+/* assumes ASCII text */
+void
+display_remote_line(int id, const unsigned char *p)
+{
+    printf("<%d: %s> ", id, partner);
+    while (*p) {
+	if (*p > 0x7f) {
+	    putchar('.');
+	    p++;
+	    continue;
+	}
+	if (filter_control_chars) {
+	    switch (*p) {
+	    case 0x03:
+		/* skip control-C */
+		p++;
+		/*
+		 * syntax: ^CN[,M] -- 0<=N<=99, 0<=M<=99, N fg, M bg,
+		 *         or ^C to turn color off
+		 */
+		/* fg */
+		if ('0' <= *p && *p <= '9') {
+		    if ('0' <= p[1] && p[1] <= '9') {
+			p++;
+		    }
+		    p++;
+		    /* bg */
+		    if (*p == ',' && '0' <= p[1] && p[1] <='9') {
+			p+=2;
+			if ('0' <= *p && *p <= '9') {
+			    p++;
+			}
+		    }
+		}
+		continue;
+
+	    case 0x02:
+		/* bold */
+	    case 0x0f:
+		/* plain text */
+	    case 0x12:
+		/* reverse */
+	    case 0x15:
+		/* underlined */
+	    case 0x1f:
+		break;
+		
+	    default:
+		putchar(*p);
+		break;
+	    }
+	} else {
+	    putchar(*p);
+	}
+	p++;
+    }
+    putchar('\n');
+    fflush(stdout);
 }
 
 /* read some characters */
