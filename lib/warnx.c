@@ -1,6 +1,6 @@
-/* $NiH$ */
+/* $NiH: warnx.c,v 1.1 2002/10/15 18:41:11 wiz Exp $ */
 /*-
- * Copyright (c) 2002 Thomas Klausner.
+ * Copyright (c) 2002, 2003 Thomas Klausner.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -43,7 +43,7 @@ warnx(const char *fmt, ...)
     va_start(ap, fmt);
     vfprintf(stderr, fmt, ap);
     va_end(ap);
-    fprintf(stderr, "\n");
+    fputs("\n", stderr);
 
     return;
 }

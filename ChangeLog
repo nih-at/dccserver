@@ -1,5 +1,7 @@
 2003-04-04  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
 
+	* warnx.c (warnx): use fputs instead of fprintf.
+
 	* dccserver.c (get_file): allow files of size 0 to be resumed.
 	(get_file): fix two messages.
 
