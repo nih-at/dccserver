@@ -1,3 +1,7 @@
+	dccserver can now listen on multiple ports; just specify
+	-p multiple times.
+	Requested by Maik Zumstrull <Maik.Zumstrull@gmx.de>.
+
 0.3:
 	Add dccsend program to send files to a remote dccserver.
 	Requested by Antti Aaltonen <antzu@iki.fi>.
