@@ -1,4 +1,4 @@
-/* $NiH: dccserver.c,v 1.53 2003/05/10 20:49:40 wiz Exp $ */
+/* $NiH: dccserver.c,v 1.54 2003/05/10 21:58:46 wiz Exp $ */
 /*-
  * Copyright (c) 2002, 2003 Thomas Klausner.
  * All rights reserved.
@@ -88,10 +88,6 @@ typedef enum state_e { ST_NONE, ST_CHAT, ST_FSERVE, ST_SEND, ST_GET,
 		       ST_GETFILE, ST_END } state_t;
 
 static int echo_input;
-#if 0
-char filename[1024];
-long filesize;
-#endif
 static int filter_control_chars;
 char nickname[1024];
 #if 0
@@ -101,6 +97,7 @@ extern char partner[];
 static const char *prg;
 
 volatile int sigchld = 0;
+volatile int siginfo = 0;
 
 #define NO_OF_CHILDREN 100
 typedef struct child_s {
@@ -115,153 +112,6 @@ child_t children[NO_OF_CHILDREN];
 int listen_port[NO_OF_LISTEN_PORTS];
 int listen_socket[NO_OF_LISTEN_PORTS];
 
-void
-say(const char *line, FILE *fp)
-{
-    fwrite(line, strlen(line), 1, fp);
-    fflush(fp);
-    return;
-}
-
-#if 0
-void
-tell_client(FILE *fp, int retcode, char *fmt, ...)
-{
-    va_list ap;
-
-    /* safety flush, needed on at least Solaris */
-    fflush(fp);
-    fprintf(fp, "%03d %s", retcode, nickname);
-    if (fmt != NULL) {
-	fputs(" ", fp);
-	va_start(ap, fmt);
-	vfprintf(fp, fmt, ap);
-	va_end(ap);
-    }
-    fputs("\n", fp);
-    fflush(fp);
-
-    return;
-}
-#endif
-
-#if 0
-/* get and save file from network */
-int
-get_file(int id, FILE *fp)
-{
-    char buf[8192];
-    int len;
-    long rem;
-    int out;
-    struct stat sb;
-    long offset;
-    long time_divisor;
-    double transfer_rate;
-    int exceed_warning_shown = 0;
-    struct timeval before, after;
-
-    if (stat(filename, &sb) == 0) {
-	/* file exists */
-	if ((sb.st_mode & S_IFMT) != S_IFREG) {
-	    warnx("existing directory entry for `%s' not a file", filename);
-	    tell_client(fp, 151, NULL);
-	    return -1;
-	}
-	/* append (resume) */
-	if ((sb.st_size >= 0) && (sb.st_size < filesize)) {
-	    offset = sb.st_size;
-	    warnx("file exists, resuming after %ld bytes", offset);
-	}
-	else if (sb.st_size == filesize) {
-	    warnx("already have complete file, denying");
-	    tell_client(fp, 151, NULL);
-	    return -1;
-	}
-	else {
-	    warnx("already have more bytes than client willing to send, denying");
-	    tell_client(fp, 151, NULL);
-	    return -1;
-	}
-	if ((out=open(filename, O_WRONLY, 0644)) == -1) {
-	    warn("can't open file `%s' for appending",  filename);
-	    tell_client(fp, 151, NULL);
-	    return -1;
-	}
-    }
-    else {
-	offset = 0;
-	if ((out=open(filename, O_WRONLY|O_CREAT, 0644)) == -1) {
-	    warn("can't open file `%s' for writing",  filename);
-	    tell_client(fp, 151, NULL);
-	    return -1;
-	}
-    }
-
-    if (lseek(out, offset, SEEK_SET) != offset) {
-	warn("can't seek to offset %ld - restarting", offset);
-	offset = 0;
-    }
-
-    tell_client(fp, 121, "%ld", offset);
-
-    gettimeofday(&before, NULL);
-
-    /* get file data into local file */
-    rem = filesize - offset;
-    while((len=fread(buf, 1, sizeof(buf), fp)) > 0) {
-	if (write(out, buf, len) < len) {
-	    warn("write error on `%s'", filename);
-	    close(out);
-	    return -1;
-	}
-	rem -= len;
-
-	if (rem < 0 && exceed_warning_shown == 0) {
-	    exceed_warning_shown = 1;
-	    warnx("getting more than %ld bytes for `%s'",
-		  filesize, filename);
-	}
-    }
-
-    gettimeofday(&after, NULL);
-
-    if (close(out) == -1)
-	warn("close error for `%s'", filename);
-
-    if (before.tv_usec > after.tv_usec) {
-	after.tv_usec += 1000000;
-	after.tv_sec--;
-    }
-    after.tv_usec -= before.tv_usec;
-    after.tv_sec -= before.tv_sec;
-#if 0
-    warnx("time taken: %lds %ldus", after.tv_sec, after.tv_usec);
-#endif
-
-    time_divisor = (after.tv_sec*1000+(after.tv_usec+500)/1000);
-    /* avoid division by zero in _very_ fast (or small) transfers */
-    if (time_divisor == 0)
-	time_divisor = 1;
-    transfer_rate = (((double)(filesize-rem-offset))/1024*1000)/time_divisor;
-    if (rem <= 0) {
-	warnx("child %d: client %s completed sending `%s' (%ld/%ld bytes got, %ld new)",
-	      id, partner, filename, filesize-rem, filesize, filesize-rem-offset);
-	warnx("child %d: time %ld.%ld seconds, transfer rate %.1fKb/s", id,
-	      after.tv_sec, (after.tv_usec+50000)/100000, transfer_rate);
-	return 0;
-    }
-    else {
-	warnx("child %d: client %s closed connection for `%s' (%ld/%ld bytes got, "
-	      "%ld new)", id, partner, filename, filesize-rem, filesize,
-	      filesize-offset-rem);
-	warnx("child %d: time %ld.%ld seconds, transfer rate %.1fKb/s", id,
-	      after.tv_sec, (after.tv_usec+50000)/100000, transfer_rate);
-    }    
-
-    return -1;
-}
-#endif
 
 /* some fserves incorrectly include the complete path -- */
 /* strip it off */
@@ -278,36 +128,6 @@ strip_path(char *p)
     return p;
 }
 
-#if 0
-/* parse line given by remote client */
-int
-parse_get_line(char *line)
-{
-    char *p, *q, *endptr;
-
-    if ((p=strchr(line+4, ' ')) == NULL)
-	return -1;
-    *p = '\0';
-    strlcpy(partner, line+4, sizeof(partner));
-
-    q = p+1;
-    if ((p=strchr(q, ' ')) == NULL)
-	return -1;
-    *p = '\0';
-
-    filesize = strtol(q, &endptr, 10);
-    if (*q == '\0' || *endptr != '\0' || (filesize <=0))
-	return -1;
-
-    /* remove path components in file name */
-    q = strip_path(p+1);
-    strlcpy(filename, q, sizeof(filename));
-    if (strlen(filename) == 0)
-	return -1;
-
-    return 0;
-}    
-#endif
 
 /* display line given from remote; filter out some characters */
 /* assumes ASCII text */
@@ -378,6 +198,9 @@ sig_handle(int signo)
     case SIGCHLD:
 	sigchld = 1;
 	break;
+    case SIGINFO:
+	siginfo = 1;
+	break;
     default:
 	break;
     }
@@ -385,124 +208,6 @@ sig_handle(int signo)
     return;
 }
 
-#if 0
-/* parse line from client, update state machine, and reply */
-state_t
-converse_with_client(FILE *fp, state_t state, char *line, int id)
-{
-    state_t ret;
-
-    ret = state;
-    switch(state) {
-    case ST_NONE:
-	if (strncmp("100 ", line, 4) == 0) {
-	    strlcpy(partner, line+4, sizeof(partner));
-	    tell_client(fp, 101, NULL);
-	    warnx("starting chat with %d: %s", id, partner);
-	    ret = ST_CHAT;
-	}
-	else if (strncmp("110 ", line, 4) == 0) {
-	    strlcpy(partner, line+4, sizeof(partner));
-#ifdef NOT_YET
-	    tell_client(fp, 111, NULL);
-	    warnx("starting fserve session with %d: %s", id, partner);
-	    ret = ST_FSERVE;
-#endif
-	    tell_client(fp, 151, NULL);
-	    ret = ST_END;
-	}
-	else if (strncmp("120 ", line, 4) == 0) {
-	    /* Client sending file */
-	    if (parse_get_line(line) < 0) {
-		tell_client(fp, 151, NULL);
-		ret = ST_END;
-		break;
-	    }
-
-	    warnx("getting file `%s' (%ld bytes) from %d: %s", filename,
-		  filesize, id, partner);
-	    fflush(stderr);
-
-	    get_file(id, fp);
-	    ret = ST_END;
-	}
-	else if (strncmp("130 ", line, 4) == 0) {
-#ifdef NOT_YET
-	    tell_client(fp, 131, NULL);
-	    ret = ST_GET;
-#endif
-	    tell_client(fp, 151, NULL);
-	    ret = ST_END;
-	}
-	else {
-	    tell_client(fp, 151, NULL);
-	    ret = ST_END;
-	    break;
-	}
-	break;
-
-    case ST_CHAT:
-	display_remote_line(id, line);
-	break;
-
-    case ST_FSERVE:
-	if (strcasecmp(line, "quit") == 0 ||
-	    strcasecmp(line, "exit") == 0) {
-	    say("Goodbye!", fp);
-	    ret = ST_END;
-	}
-	break;
-    case ST_GET:
-	break;   
-
-    case ST_SEND:
-    case ST_END:
-    default:
-	    tell_client(fp, 151, NULL);
-	    ret = ST_END;
-    }
-
-    return ret;
-}
-#endif
-
-#if 0
-/* main child routine: read line from client and call parser */
-void
-communicate_with_client(int sock, int id)
-{
-    FILE *fp;
-    char buf[8192];
-    state_t state;
-
-    state = ST_NONE;
-
-    if ((fp=fdopen(sock, "r+")) == NULL) {
-	(void)close(sock);
-	err(1, "[child] can't fdopen");
-    }
-
-    while ((state != ST_END) && (fgets(buf, sizeof(buf), fp) != NULL)) {
-	if ((*buf == '\n') || (*buf == '\r')) {
-	    /* empty line */
-	    *buf = '\0';
-	}
-	else if (strtok(buf, "\n\r") == NULL) {
-	    warn("client sent too long line");
-	    tell_client(fp, 151, NULL);
-	    state = ST_END;
-	    continue;
-	}
-	state = converse_with_client(fp, state, buf, id);
-    }
-
-    if (state != ST_END)
-	warnx("closing connection with %d: %s", id, partner);
-
-    (void)fclose(fp);
-    exit(0);
-}
-#endif
 
 /*
  * create child to handle connection and update structure tracking
@@ -529,11 +234,7 @@ handle_connection(int sock, int oldsock)
     switch(child=fork()) {
     case 0:
 	close(oldsock);
-#if 0
-	communicate_with_client(sock, i);
-#else
 	child_loop(sock, i);
-#endif
 	/* UNREACHABLE */
 	_exit(1);
 
@@ -594,6 +295,8 @@ handle_input(void)
     }
     else if (strncmp(buf, "quit", 4) == 0)
 	return -1;
+    else if (strncmp(buf, "info", 4) == 0)
+	kill(0, SIGINFO);
 
     return 0;
 }
@@ -776,6 +479,7 @@ main(int argc, char *argv[])
     for (c=0; c<NO_OF_CHILDREN; c++)
 	children[c].pid = -1;
     signal(SIGCHLD, sig_handle);
+    signal(SIGINFO, sig_handle);
 
     /* one for stdin, one for each listening socket */
     if ((pollset=malloc(sizeof(*pollset)*(port_count+1))) == NULL)
