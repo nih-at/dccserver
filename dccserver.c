@@ -1,4 +1,4 @@
-/* $NiH: dccserver.c,v 1.40 2003/04/05 00:18:54 wiz Exp $ */
+/* $NiH: dccserver.c,v 1.41 2003/04/05 00:38:24 wiz Exp $ */
 /*-
  * Copyright (c) 2002, 2003 Thomas Klausner.
  * All rights reserved.
@@ -164,7 +164,7 @@ get_file(int id, FILE *fp)
     }
     else {
 	offset = 0;
-	if ((out=open(filename, O_WRONLY|O_CREAT|O_EXCL, 0644)) == -1) {
+	if ((out=open(filename, O_WRONLY|O_CREAT, 0644)) == -1) {
 	    warn("can't open file `%s' for writing",  filename);
 	    tell_client(fp, 151, NULL);
 	    return -1;

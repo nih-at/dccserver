@@ -1,5 +1,8 @@
 2003-04-05  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
 
+	* dccserver.c (get_file): For consistency, don't insist on O_EXCL
+	when creating new files. Noted by Rudolf Polzer.
+
 	* dccserver.mdoc: remove a paragraph from BUGS that's no longer
 	true. Noted by Rudolf Polzer.
 	* dccserver.man: regen.
