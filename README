@@ -9,7 +9,7 @@ are done.
 Usage:
 dccserver [-n nickname] [-p port]
 
-The nickname should argument should be set to the user name you use in
+The nickname argument should be set to the user name you use in
 your IRC client.
 The port argument defaults to 59, the MIRC default -- please note: To
 bind to ports below 1024 you have to be root.
