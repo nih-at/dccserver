@@ -1,4 +1,4 @@
-/* $NiH: dccsend.c,v 1.14 2003/05/11 02:39:38 wiz Exp $ */
+/* $NiH: dccsend.c,v 1.15 2003/05/24 23:53:50 wiz Exp $ */
 /*-
  * Copyright (c) 2003 Thomas Klausner.
  * All rights reserved.
@@ -148,7 +148,7 @@ send_file(int out, char *filename, long filesize)
     }
 
     if (offset > 0) {
-	if (lseek(in, offset, SEEK_SET) != 0) {
+	if (lseek(in, offset, SEEK_SET) != offset) {
 	    warn("can't seek to %ld", offset);
 	    close(in);
 	    return -1;
@@ -182,58 +182,54 @@ send_file(int out, char *filename, long filesize)
     return -1;
 }
 
-/* parse line given by remote client */
-int
-parse_send_line(char *line)
-{
-    char *p, *endptr;
-
-    if ((p=strchr(line+4, ' ')) == NULL)
-	return -1;
-    *p = '\0';
-    strlcpy(remotenick, line+4, sizeof(remotenick));
-    *p++ = ' ';
-
-    offset = strtol(p, &endptr, 10);
-    if (*p == '\0' || (*endptr != '\0' && *endptr != '\n'
-		       && *endptr != '\r') || (offset <0))
-	return -1;
-
-    return 0;
-}    
-
-/* main child routine: read line from client and call parser */
 void
-communicate_with_server(int fd, char *filename, long filesize)
+main_loop(int sock, char *filename, size_t filesize)
 {
-    char buf[8192];
+    char line[8192];
+    char *arg2, *arg3, *endptr;
     state_t state;
 
+    tell_client(sock, 120, "%ld %s", filesize, strip_path(filename));
     state = ST_NONE;
 
-    tell_client(fd, 120, "%ld %s", filesize, strip_path(filename));
-    if (get_line_from_client(fd, buf, sizeof(buf)) < 0) {
-	warnx("closing connection");
-	(void)close(fd);
-	return;
-    }
-
-    if (strncmp("121 ", buf, 4) == 0) {
-	/* accepted */
-	if (parse_send_line(buf) < 0) {
-	    warnx("invalid reply: %s", buf);
+    while (state != ST_END) {
+	switch (state) {
+	case ST_NONE:
+	    if (get_line_from_client(sock, line, sizeof(line)) <= 0) {
+		warnx("closing connection");
+		state = ST_END;
+	    }
+	    else {
+		switch (parse_reply(line, remotenick, sizeof(remotenick), &arg2, &arg3)) {
+		case 121:
+		    /* XXX: verify remote user */
+		    offset = strtol(arg2, &endptr, 10);
+		    if (*arg2 == '\0' || *endptr != '\0' || (offset < 0)) {
+			tell_client(sock, 151, NULL);
+			state = ST_END;
+			break;
+		    }
+		    send_file(sock, filename, filesize);
+		    state = ST_END;
+		    break;
+		case 150:
+		    warnx("remote unavailable");
+		    state = ST_END;
+		    break;
+		case 151:
+		    warnx("remote denied");
+		    state = ST_END;
+		    break;
+		default:
+		    break;
+		}
+	    }
+	default:
+	    break;
 	}
-	else /* XXX: verify remote user */
-	    send_file(fd, filename, filesize);
     }
-    else if (strncmp("150 ", buf, 4) == 0)
-	warnx("remote unavailable");
-    else if (strncmp("151 ", buf, 4) == 0)
-	warnx("remote denied");
-    else
-	warnx("invalid reply: %s", buf);
 
-    (void)close(fd);
+    (void)close(sock);
     return;
 }
 
@@ -319,7 +315,7 @@ main(int argc, char *argv[])
     if (s < 0)
 	return 1;
 
-    communicate_with_server(s, argv[optind++], sb.st_size);
+    main_loop(s, argv[optind++], sb.st_size);
 
     return 0;
 }
