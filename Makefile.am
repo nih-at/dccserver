@@ -1,16 +1,17 @@
-bin_PROGRAMS=dccserver
+bin_PROGRAMS=dccserver dccsend
 man_MANS=dccserver.1
 
 LDADD=@LIBOBJS@
 
 dccserver_SOURCES=dccserver.c
+dccsend_SOURCES=dccsend.c
 
 DISTCLEANFILES=	dccserver.1
 
 EXTRA_DIST=	dccserver.man dccserver.mdoc \
 		debian/changelog debian/control debian/copyright debian/dirs \
 		debian/docs debian/rules \
-		err.c errx.c strlcpy.c warn.c warnx.c
+		err.c errx.c getaddrinfo.c getaddrinfo.h strlcpy.c warn.c warnx.c
 
 AUTOMAKE_OPTIONS=	dist-bzip2
 
