@@ -28,23 +28,9 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <sys/cdefs.h>
-#if defined(LIBC_SCCS) && !defined(lint)
-__RCSID("$NetBSD: strlcpy.c,v 1.12 2002/04/24 17:45:15 bjh21 Exp $");
-#endif /* LIBC_SCCS and not lint */
-
-#ifdef _LIBC
-#include "namespace.h"
-#endif
 #include <sys/types.h>
 #include <assert.h>
 #include <string.h>
-
-#ifdef _LIBC
-# ifdef __weak_alias
-__weak_alias(strlcpy, _strlcpy)
-# endif
-#endif
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -57,11 +43,7 @@ __weak_alias(strlcpy, _strlcpy)
  * Returns strlen(src); if retval >= siz, truncation occurred.
  */
 size_t
-#ifdef _LIBC
-_strlcpy(dst, src, siz)
-#else
 strlcpy(dst, src, siz)
-#endif
 	char *dst;
 	const char *src;
 	size_t siz;
