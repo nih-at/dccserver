@@ -15,6 +15,7 @@ EXTRA_DIST=	dccserver.man dccserver.mdoc README \
 AUTOMAKE_OPTIONS=	dist-bzip2
 
 install-exec-hook:
-	chown root $(bindir)/dccserver
-	chmod u+s $(bindir)/dccserver
-	@echo dccserver has been installed setuid root.
+	@(chown root $(bindir)/dccserver && \
+		chmod u+s $(bindir)/dccserver && \
+		echo NOTE: dccserver has been installed setuid root.) || \
+	echo dccserver NOT installed setuid root.
