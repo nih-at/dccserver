@@ -1,7 +1,11 @@
+2003-05-02  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
+
+	* dccsend.c: include <sys/types.h>; noted missing by Jeremy Gore.
+
 2003-04-15  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
 
-	* strlcpy.c: Sync license with original (less strict).
-	* COPYING: Sync license with strlcpy.c.
+	* strlcpy.c: sync license with original (less strict).
+	* COPYING: sync license with strlcpy.c.
 
 	* dccserver.c (get_file): add warning in an error case.
 
