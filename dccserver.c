@@ -1,5 +1,6 @@
-/* $NiH: dccserver.c,v 1.12 2002/10/14 23:21:44 wiz Exp $ */
+/* $NiH: dccserver.c,v 1.13 2002/10/14 23:39:23 wiz Exp $ */
 #include <sys/socket.h>
+#include <sys/stat.h>
 #include <sys/wait.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
