@@ -1,4 +1,4 @@
-/* $NiH: dccsend.c,v 1.16 2003/05/25 00:34:16 wiz Exp $ */
+/* $NiH: dccsend.c,v 1.17 2003/05/25 00:40:00 wiz Exp $ */
 /*-
  * Copyright (c) 2003 Thomas Klausner.
  * All rights reserved.
@@ -80,6 +80,13 @@ static long offset;
 static char remotenick[NICKSIZE];
 
 char nickname[1024];
+
+int connect_to_server(char *, int);
+int main(int, char *[]);
+void main_loop(int, char *, size_t);
+int send_file(int, char *, long);
+void usage(const char *);
+
 
 int
 connect_to_server(char *host, int port)

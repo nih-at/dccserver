@@ -1,5 +1,7 @@
 2003-08-04  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
 
+	* dccsend.c: add prototypes.
+
 	* config.guess, config.sub, depcomp, install-sh: update
 	from automake 1.7.6.
 
