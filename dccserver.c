@@ -1,4 +1,4 @@
-/* $NiH: dccserver.c,v 1.56 2003/05/11 00:37:14 wiz Exp $ */
+/* $NiH: dccserver.c,v 1.57 2003/05/11 02:04:10 wiz Exp $ */
 /*-
  * Copyright (c) 2002, 2003 Thomas Klausner.
  * All rights reserved.
@@ -404,7 +404,7 @@ main(int argc, char *argv[])
 		if (children[i].pid != -1)
 		    count++;
 	    }
-	    warnx("%d running children", count);
+	    warnx("%d running child%s", count, count == 1 ? "" : "ren");
 	}
 
 	/* poll for events from network and user */
