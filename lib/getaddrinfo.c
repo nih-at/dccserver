@@ -1,4 +1,4 @@
-/* $NiH$ */
+/* $NiH: getaddrinfo.c,v 1.1 2003/04/04 13:44:06 wiz Exp $ */
 /*-
  * getaddrinfo -- nodename-to-address translation in protocol-independent manner
  * Copyright (C) 2000, 2001 Dieter Baron.
@@ -43,6 +43,7 @@
 #include <arpa/inet.h>	
 #include <netdb.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "config.h"
 #include "getaddrinfo.h"
