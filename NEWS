@@ -1,10 +1,11 @@
-0.3b: (test release)
+
+	Add "close" command; close particular connections.
 
 	Added proper timeout handling.
 
 	Add "info" command; shows current transfer states for all
 	connections. Sending dccserver a SIGINFO (or SIGUSR1 on
-	systems without SIGINFO) signal also works.
+	systems without SIGINFO) signal works too.
 
 	Simplified build on Darwin, and included instructions.
 
