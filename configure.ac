@@ -3,7 +3,7 @@ dnl Process this file with autoconf to produce a configure script.
 dnl init
 
 AC_PREREQ(2.57)
-AC_REVISION([$NiH: configure.ac,v 1.13 2003/04/02 09:25:45 wiz Exp $])
+AC_REVISION([$NiH: configure.ac,v 1.14 2003/04/03 09:28:37 wiz Exp $])
 AC_INIT([dccserver],[0.2.1],[tk@giga.or.at])
 AC_CONFIG_SRCDIR([dccserver.c])
 AC_CONFIG_HEADERS([config.h])
@@ -25,7 +25,7 @@ AC_CHECK_LIB(nsl, main)
 dnl library functions
 
 dnl AC_REPLACE_FUNCS(getopt_long)
-AC_REPLACE_FUNCS([err strlcpy warn warnx])
+AC_REPLACE_FUNCS([err errx strlcpy warn warnx])
 
 dnl AC_CHECK_FUNCS([seteuid])
 
