@@ -1,5 +1,8 @@
 2003-05-13  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
 
+	* child.c (display_remote_line): fix signedness warnings from
+	Tru64.
+
 	* configure.ac: fix getaddrinfo test for Tru64.
 
 2003-05-12  Thomas Klausner  <wiz@danbala.tuwien.ac.at>

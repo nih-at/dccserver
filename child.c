@@ -1,4 +1,4 @@
-/* $NiH: child.c,v 1.11 2003/05/11 16:14:23 wiz Exp $ */
+/* $NiH: child.c,v 1.12 2003/05/12 18:44:03 wiz Exp $ */
 /*-
  * Copyright (c) 2003 Thomas Klausner.
  * All rights reserved.
@@ -194,11 +194,11 @@ strip_path(char *p)
 /* display line given from remote; filter out some characters */
 /* assumes ASCII text */
 void
-display_remote_line(int id, const unsigned char *p)
+display_remote_line(int id, const char *p)
 {
     printf("<%d: %s> ", id, partner);
     while (*p) {
-	if (*p > 0x7f) {
+	if (*(unsigned char *)p > 0x7f) {
 	    putchar('.');
 	    p++;
 	    continue;
