@@ -1,5 +1,7 @@
 2003-04-07  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
 
+	* configure.ac: Bump to 0.3.
+
 	* Makefile.am, configure.ac: add and install dccsend man pages.
 
 	* dccsend.mdoc: add man page for dccsend.
@@ -14,8 +16,6 @@
 
 	* dccserver.mdoc: add -e to SYNOPSIS.
 	* dccserver.man: regen.
-
-	* configure.ac: Bump to 0.3.
 
 2003-04-05  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
 
