@@ -1,4 +1,4 @@
-/* $NiH: dccsend.c,v 1.19 2003/10/26 10:10:13 wiz Exp $ */
+/* $NiH: dccsend.c,v 1.20 2003/10/28 20:26:47 wiz Exp $ */
 /*-
  * Copyright (c) 2003 Thomas Klausner.
  * All rights reserved.
@@ -38,6 +38,7 @@
 #ifdef HAVE_ERR_H
 #include <err.h>
 #endif /* HAVE_ERR_H */
+#include <errno.h>
 #include <fcntl.h>
 #include <netdb.h>
 #include <stdio.h>
@@ -76,6 +77,8 @@ void warnx(const char *, ...);
 #define BACKLOG 10
 #define NICKSIZE 100
 
+/* enable debugging? */
+static int debug = 0;
 static long offset;
 static char remotenick[NICKSIZE];
 
@@ -140,7 +143,7 @@ connect_to_server(char *host, int port)
 int
 send_file(int out, char *filename, long filesize)
 {
-    char buf[8192];
+    unsigned char buf[8192];
     int len;
     long rem;
     int in;
@@ -179,13 +182,38 @@ send_file(int out, char *filename, long filesize)
     if (rem <= 0) {
 	warnx("sending `%s' to %s complete: %ld/%ld bytes sent, %ld new",
 	      filename, remotenick, filesize-rem, filesize, filesize-rem-offset);
-	return 0;
     }
     else {
 	warnx("%s closed connection for `%s' (%ld/%ld bytes sent, "
 	      "%ld new)", remotenick, filename, filesize-rem, filesize,
 	      filesize-offset-rem);
     }
+
+    /* read from network until EOF, since the client is supposed to
+     * close the connection */
+    while ((len=read(out, buf, sizeof(buf))) != 0) {
+	if (len == -1 && errno != EINTR) {
+	    warn("read error from network");
+	    break;
+	}
+	else if (len > 0 && debug) {
+	    int i;
+
+	    puts("received data:\n");
+	    for (i=0; i<len; i++) {
+		printf("%02x ", buf[i]);
+		if ((i+1)%18 == 0)
+		    putchar('\n');
+	    }
+	    putchar('\n');
+	}
+    }
+
+    if (len == 0 && debug)
+	puts("connection closed by remote\n");
+
+    if (rem <= 0)
+	return 0;
 
     return -1;
 }
@@ -287,8 +315,12 @@ main(int argc, char *argv[])
     *remotenick = '\0';
     port = 59;
 
-    while ((c=getopt(argc, argv, "hn:p:r:v")) != -1) {
+    while ((c=getopt(argc, argv, "dhn:p:r:v")) != -1) {
 	switch(c) {
+	case 'd':
+	    debug = 1;
+	    break;
+
 	case 'h':
 	    usage(argv[0]);
 
