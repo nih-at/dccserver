@@ -14,7 +14,6 @@ Planned changes
   all replacement functions
 
 Possible changes
-. add quit command
 . make get work
 . make fserve work
 . bind to specific IP only
