@@ -1,6 +1,7 @@
 2003-05-12  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
 
 	* dccserver.mdoc: document "close" command.
+	* dccserver.man: regen.
 
 	* dccserver.c: add sigint variable.
 	(sig_handle): handle SIGINT.
