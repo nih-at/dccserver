@@ -1,4 +1,4 @@
-/* $NiH: child.c,v 1.7 2003/05/11 02:03:49 wiz Exp $ */
+/* $NiH: child.c,v 1.8 2003/05/11 02:40:13 wiz Exp $ */
 /*-
  * Copyright (c) 2003 Thomas Klausner.
  * All rights reserved.
@@ -398,11 +398,11 @@ display_transfer_statistics(struct transfer_state *ts, int id)
 struct transfer_state *
 setup_read_file(int fd, char *filename, long filesize)
 {
+    char buf[BUFSIZE];
     struct stat sb;
     struct transfer_state *ts;
     long offset;
     int out;
-    char buf[BUFSIZE];
     int len;
 
     if (stat(filename, &sb) == 0) {
@@ -477,7 +477,7 @@ setup_read_file(int fd, char *filename, long filesize)
 
     /* get any data that's in fdgets() buffer */
     while ((len=fdgets(-1, buf, sizeof(buf))) > 0) {
-    	if (write(ts->outfd, buf, len) < len) {
+	if (write(ts->outfd, buf, len) < len) {
 	    warn("`%s': write error", ts->filename);
 	    free(ts->filename);
 	    free(ts);
