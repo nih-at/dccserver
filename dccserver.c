@@ -1,4 +1,4 @@
-/* $NiH: dccserver.c,v 1.7 2002/10/14 17:36:09 wiz Exp $ */
+/* $NiH: dccserver.c,v 1.8 2002/10/14 18:21:27 wiz Exp $ */
 #include <sys/socket.h>
 #include <sys/wait.h>
 #include <netinet/in.h>
@@ -73,18 +73,44 @@ get_file(FILE *fp)
     int len;
     long rem;
     int out;
+    struct stat sb;
+    long offset;
 
-    /* XXX: more checks */
-    if ((out=open(filename, O_WRONLY|O_CREAT|O_EXCL, 0644)) == -1) {
-	warn("can't open file `%s' for writing",  filename);
-	tell_client(fp, 151, NULL);
-	return -1;
+    if (stat(filename, &sb) == 0) {
+	/* file exists */
+	if ((sb.st_mode & S_IFMT) != S_IFREG) {
+	    /* XXX: rename */
+	    tell_client(fp, 151, NULL);
+	    return -1;
+	}
+	/* append (resume) */
+	if ((sb.st_size > 0) && (sb.st_size < filesize)) {
+	    offset = sb.st_size;
+	    warnx("file exists, resuming after %ld bytes", offset);
+	}
+	else {
+	    /* XXX: rename */
+	    tell_client(fp, 151, NULL);
+	    return -1;
+	}
+	if ((out=open(filename, O_WRONLY|O_APPEND, 0644)) == -1) {
+	    warn("can't open file `%s' for appending",  filename);
+	    tell_client(fp, 151, NULL);
+	    return -1;
+	}
+    }
+    else {
+	offset = 0;
+	if ((out=open(filename, O_WRONLY|O_CREAT|O_EXCL, 0644)) == -1) {
+	    warn("can't open file `%s' for writing",  filename);
+	    tell_client(fp, 151, NULL);
+	    return -1;
+	}
     }
 
-    /* XXX: resume */
-    tell_client(fp, 121, "0");
+    tell_client(fp, 121, "%ld", offset);
 
-    rem = filesize;
+    rem = filesize - offset;
     while((len=fread(buf, 1, MIN(rem, sizeof(buf)), fp)) > 0) {
 	if (write(out, buf, len) < len) {
 	    warn("write error on `%s'", filename);
@@ -101,12 +127,15 @@ get_file(FILE *fp)
 	warn("close error for `%s'", filename);
 
     if (rem <= 0) {
-	warnx("`%s' complete (%ld bytes got)", filename, filesize);
+	warnx("`%s' complete (%ld/%ld bytes got, %ld new)", filename,
+	      filesize, filesize, filesize-offset);
 	return 0;
     }
-
-    if (ferror(fp))
-	warn("error getting file `%s'", filename);
+    else {
+	warnx("client closed connection for `%s' (%ld/%ld bytes, "
+	      "%ld new)", filename, filesize-rem, filesize,
+	      filesize-offset-rem);
+    }    
 
     return -1;
 }
@@ -181,6 +210,7 @@ converse_with_client(FILE *fp, state_t state, char *line)
 	    /* Client sending file */
 	    if (parse_get_line(line) < 0) {
 		tell_client(fp, 151, NULL);
+		ret = ST_END;
 		break;
 	    }
 
@@ -251,7 +281,7 @@ converse_with_client(FILE *fp, state_t state, char *line)
 }
 
 void
-do_child(int sock)
+communicate_with_client(int sock)
 {
     FILE *fp;
     char buf[8192];
@@ -295,7 +325,7 @@ handle_connection(int sock)
 
     switch(child=fork()) {
     case 0:
-	do_child(sock);
+	communicate_with_client(sock);
 	/* UNREACHABLE */
 	_exit(1);
 
