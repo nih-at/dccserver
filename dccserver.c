@@ -1,4 +1,4 @@
-/* $NiH: dccserver.c,v 1.8 2002/10/14 18:21:27 wiz Exp $ */
+/* $NiH: dccserver.c,v 1.9 2002/10/14 22:30:47 wiz Exp $ */
 #include <sys/socket.h>
 #include <sys/wait.h>
 #include <netinet/in.h>
@@ -236,19 +236,45 @@ converse_with_client(FILE *fp, state_t state, char *line)
 	break;
 
     case ST_CHAT:
-	printf("<%s>", partner);
+	printf("<%s> ", partner);
 	p = line;
 	while (*p) {
 	    switch (*p) {
-	    case 0x2:
-	    case 0xf:
-	    case 0x1f:
+	    case 0x03:
+		/* skip control-C */
+		p++;
+		/*
+		 * syntax: ^CN[,M] -- 0<=N<=99, 0<=M<=99, N fg, M bg,
+		 *         or ^C to turn color off
+		 */
+		/* fg */
+		if ('0' <= *p && *p <= '9') {
+		    if ('0' <= p[1] && p[1] <= '9') {
+			p++;
+		    }
+		    p++;
+		}
+		if (*p == ',') {
+		    p++;
+		    /* bg */
+		    if ('0' <= *p && *p <= '9') {
+			if ('0' <= p[1] && p[1] <= '9') {
+			    p++;
+			}
+			p++;
+		    }
+		}
 		break;
-	    case 0x3:
-		if (p[1] != '\0')
-		    p++;
-		if (p[1] != '\0')
-		    p++;
+
+	    case 0x02:
+		/* bold */
+	    case 0x0f:
+		/* plain text */
+	    case 0x12:
+		/* reverse */
+	    case 0x15:
+		/* underlined */
+	    case 0x1f:
 		break;
 		
 	    default:
