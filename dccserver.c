@@ -1,4 +1,4 @@
-/* $NiH: dccserver.c,v 1.44 2003/04/11 08:31:08 wiz Exp $ */
+/* $NiH: dccserver.c,v 1.45 2003/04/11 09:55:15 wiz Exp $ */
 /*-
  * Copyright (c) 2002, 2003 Thomas Klausner.
  * All rights reserved.
@@ -35,6 +35,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
+#include <sys/time.h>
 #include <sys/wait.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -137,7 +138,10 @@ get_file(int id, FILE *fp)
     int out;
     struct stat sb;
     long offset;
+    long time_divisor;
+    double transfer_rate;
     int exceed_warning_shown = 0;
+    struct timeval before, after;
 
     if (stat(filename, &sb) == 0) {
 	/* file exists */
@@ -183,6 +187,8 @@ get_file(int id, FILE *fp)
 
     tell_client(fp, 121, "%ld", offset);
 
+    gettimeofday(&before, NULL);
+
     /* get file data into local file */
     rem = filesize - offset;
     while((len=fread(buf, 1, sizeof(buf), fp)) > 0) {
@@ -200,18 +206,39 @@ get_file(int id, FILE *fp)
 	}
     }
 
+    gettimeofday(&after, NULL);
+
     if (close(out) == -1)
 	warn("close error for `%s'", filename);
 
+    if (before.tv_usec > after.tv_usec) {
+	after.tv_usec += 1000000;
+	after.tv_sec--;
+    }
+    after.tv_usec -= before.tv_usec;
+    after.tv_sec -= before.tv_sec;
+#if 0
+    warnx("time taken: %lds %ldus", after.tv_sec, after.tv_usec);
+#endif
+
+    time_divisor = (after.tv_sec*1000+(after.tv_usec+500)/1000);
+    /* avoid division by zero in _very_ fast (or small) transfers */
+    if (time_divisor == 0)
+	time_divisor = 1;
+    transfer_rate = (((double)(filesize-rem-offset))/1024*1000)/time_divisor;
     if (rem <= 0) {
-	warnx("client %d: %s completed sending `%s' (%ld/%ld bytes got, %ld new)",
+	warnx("child %d: client %s completed sending `%s' (%ld/%ld bytes got, %ld new)",
 	      id, partner, filename, filesize-rem, filesize, filesize-rem-offset);
+	warnx("child %d: time %ld.%ld seconds, transfer rate %.1fKb/s", id,
+	      after.tv_sec, (after.tv_usec+50000)/100000, transfer_rate);
 	return 0;
     }
     else {
-	warnx("client %d: %s closed connection for `%s' (%ld/%ld bytes got, "
+	warnx("child %d: client %s closed connection for `%s' (%ld/%ld bytes got, "
 	      "%ld new)", id, partner, filename, filesize-rem, filesize,
 	      filesize-offset-rem);
+	warnx("child %d: time %ld.%ld seconds, transfer rate %.1fKb/s", id,
+	      after.tv_sec, (after.tv_usec+50000)/100000, transfer_rate);
     }    
 
     return -1;
@@ -341,7 +368,6 @@ state_t
 converse_with_client(FILE *fp, state_t state, char *line, int id)
 {
     state_t ret;
-    unsigned char *p;
 
     ret = state;
     switch(state) {
@@ -517,7 +543,6 @@ handle_input(void)
     char buf[8192];
     int child;
     char *end;
-    int ret;
 
     if (fgets(buf, sizeof(buf), stdin) == NULL)
 	return -1;
@@ -573,7 +598,7 @@ create_and_bind_socket(int port)
 
     if (bind(sock, (struct sockaddr *)&laddr, sizeof(laddr)) == -1) {
 	(void)close(sock);
-	err(1, "can't bind socket to port %ld", port);
+	err(1, "can't bind socket to port %d", port);
     }
 
     return sock;

@@ -1,3 +1,11 @@
+2003-04-12  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
+
+	* dccserver.c (get_file): show time taken by transfer and transfer
+	rate.
+	(converse_with_client): remove superfluous variable.
+	(handle_input): remove superfluous variable.
+	(create_and_bind_socket): fix format string.
+
 2003-04-11  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
 
 	* dccserver.c: allow listening on multiple ports.
