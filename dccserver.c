@@ -1,4 +1,4 @@
-/* $NiH: dccserver.c,v 1.41 2003/04/05 00:38:24 wiz Exp $ */
+/* $NiH: dccserver.c,v 1.42 2003/04/05 21:51:28 wiz Exp $ */
 /*-
  * Copyright (c) 2002, 2003 Thomas Klausner.
  * All rights reserved.
@@ -589,7 +589,7 @@ main(int argc, char *argv[])
 	    break;
 
 	case 'v':
-	    puts(PACKAGE_STRING "\n");
+	    puts(PACKAGE_STRING);
 	    exit(0);
 
 	case 'n':

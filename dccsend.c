@@ -1,4 +1,4 @@
-/* $NiH: dccsend.c,v 1.9 2003/04/07 11:50:35 wiz Exp $ */
+/* $NiH: dccsend.c,v 1.10 2003/04/07 11:55:17 wiz Exp $ */
 /*-
  * Copyright (c) 2003 Thomas Klausner.
  * All rights reserved.
@@ -329,7 +329,7 @@ main(int argc, char *argv[])
 	    break;
 
 	case 'v':
-	    puts(PACKAGE_STRING "\n");
+	    puts("dccsend " PACKAGE_VERSION);
 	    exit(0);
 
 	default:

@@ -1,5 +1,9 @@
 2003-04-07  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
 
+	* dccsend.c (main): fix -v output.
+
+	* dccserver.c (main): fix -v output.
+
 	* dccsend.c (usage): fix usage.
 	(main): change default nickname to "dccsend".
 
