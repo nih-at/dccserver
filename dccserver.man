@@ -58,7 +58,7 @@ irssi(1)
 window (see also the
 \fB-i\fR
 option and the
-section EXAMPLES
+EXAMPLES
 section).
 .TP 15
 \fB-h\fR
@@ -84,7 +84,7 @@ Defaults to 59, since that is MIRC's default port.
 Please note that you have to have root privileges to bind to ports
 below 1024.
 See
-section SECURITY CONSIDERATIONS
+SECURITY CONSIDERATIONS
 below.
 .TP 15
 \fB-v\fR
