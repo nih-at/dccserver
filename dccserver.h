@@ -1,4 +1,4 @@
-/* $NiH: dccserver.h,v 1.3 2003/05/12 18:44:03 wiz Exp $ */
+/* $NiH: dccserver.h,v 1.4 2003/05/12 21:34:17 wiz Exp $ */
 /*-
  * Copyright (c) 2003 Thomas Klausner.
  * All rights reserved.
@@ -71,7 +71,6 @@ void warn(const char *, ...);
 void warnx(const char *, ...);
 #endif
 
-
 /* typedefs */
 
 typedef enum state_e { ST_NONE, ST_CHAT, ST_FSERVE, ST_SEND, ST_GET,
@@ -87,6 +86,5 @@ extern volatile sig_atomic_t sigint;
 extern int filter_control_chars;
 extern char nickname[];
 
-
 /* in child.c */
-extern void child_loop(int sock, int id);
+extern void child_loop(int, int);
