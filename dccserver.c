@@ -1,4 +1,4 @@
-/* $NiH: dccserver.c,v 1.35 2003/04/02 12:42:04 wiz Exp $ */
+/* $NiH: dccserver.c,v 1.36 2003/04/03 15:50:36 wiz Exp $ */
 /*-
  * Copyright (c) 2002, 2003 Thomas Klausner.
  * All rights reserved.
@@ -140,7 +140,7 @@ get_file(int id, FILE *fp)
 	    return -1;
 	}
 	/* append (resume) */
-	if ((sb.st_size > 0) && (sb.st_size < filesize)) {
+	if ((sb.st_size >= 0) && (sb.st_size < filesize)) {
 	    offset = sb.st_size;
 	    warnx("file exists, resuming after %ld bytes", offset);
 	}
@@ -187,13 +187,13 @@ get_file(int id, FILE *fp)
 	warn("close error for `%s'", filename);
 
     if (rem <= 0) {
-	warnx("`%s' from %d: %s complete (%ld/%ld bytes got, %ld new)", filename,
-	      id, partner, filesize-rem, filesize, filesize-rem-offset);
+	warnx("client %d: %s completed sending `%s' (%ld/%ld bytes got, %ld new)",
+	      id, partner, filename, filesize-rem, filesize, filesize-rem-offset);
 	return 0;
     }
     else {
 	warnx("client %d: %s closed connection for `%s' (%ld/%ld bytes got, "
-	      "%ld new)", filename, id, partner, filesize-rem, filesize,
+	      "%ld new)", id, partner, filename, filesize-rem, filesize,
 	      filesize-offset-rem);
     }    
 
