@@ -4,24 +4,7 @@ Currently, Chat and Send (including resume) modes are supported.
 Fserve and Get mode are not yet supported.
 
 All connections are accepted; some simple checks on allowed file names
-are done.
-
-Usage:
-dccserver [-n nickname] [-p port]
-
-The nickname argument should be set to the user name you use in your
-IRC client.
-The port argument defaults to 59, the MIRC default. Please note: To
-bind to ports below 1024 you have to be root.
-
-To manually send commands to the remote clients (for chats or
-fserves), type:
-	<nn>: <text>
-where <nn> is the number of the child, and the space after the `:' is
-important, e.g.,
-	0: dir
-Text coming from the clients will be shown prepended by their
-nickname.
+are done.  For more details, please look in the man page.
 
 If you package this program, please reference either of
 	ftp.giga.or.at /pub/nih/dccserver/
