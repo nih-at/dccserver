@@ -1,5 +1,7 @@
 2002-11-15  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
 
+	* mkinstalldirs: Update to automake 1.7.1 version.
+
 	* configure.ac: Update to autoconf 2.56.
 
 2002-10-17  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
