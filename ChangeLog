@@ -1,5 +1,11 @@
 2003-05-02  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
 
+	* configure.ac: check for poll.h and sys/poll.h.
+	(USE_LIBPOLL): detect poll library (if any), and point to poll
+	emulation lib if no poll() is found.
+
+	* dccserver.c: conditionally include poll.h or sys/poll.h.
+
 	* dccsend.c: include <sys/types.h>; noted missing by Jeremy Gore.
 
 2003-04-15  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
