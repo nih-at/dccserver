@@ -1,5 +1,8 @@
 2003-04-15  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
 
+	* strlcpy.c: Sync license with original (less strict).
+	* COPYING: Sync license with strlcpy.c.
+
 	* dccserver.c (get_file): add warning in an error case.
 
 2003-04-12  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
