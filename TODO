@@ -9,7 +9,7 @@ Planned changes
 . add option to create per-remote download dirs
 . regression tests
 . make configure.ac/Makefile.am smarter -- not both programs need
-  all replacement functions
+  all replacement functions or -lpoll
 
 Possible changes
 . make get work
