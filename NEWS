@@ -4,6 +4,9 @@
 	Add dccsend program to send files to a remote dccserver.
 	Requested by Antti Aaltonen <antzu@iki.fi>.
 
+	Try to handle it more gracefully when two or more clients
+	want to write to the same file. Idea from Rudolf Polzer.
+
 	Add lots of fflushes, some from Rudolf Polzer.
 
 	Strip paths from file name (some weird clients send them).
