@@ -1,5 +1,7 @@
+MANFMT=@MANFMT@
+
 bin_PROGRAMS=dccserver dccsend
-man_MANS=dccserver.1 dccsend.1
+man1_MANS=dccserver.${MANFMT} dccsend.${MANFMT}
 
 LDADD=		lib/libdcc.a
 AM_CPPFLAGS=	-I${top_srcdir}/lib
@@ -8,8 +10,6 @@ dccserver_SOURCES=dccserver.c child.c
 dccsend_SOURCES=dccsend.c
 
 noinst_HEADERS=	dccserver.h
-
-DISTCLEANFILES=	dccserver.1 dccsend.1
 
 EXTRA_DIST=	dccserver.man dccserver.mdoc \
 		dccsend.man dccsend.mdoc \
@@ -27,10 +27,15 @@ install-exec-hook:
 		echo NOTE: dccserver has been installed setuid root.) || \
 	echo dccserver NOT installed setuid root.
 
-update-man:
-	TEMPEXT=mk-$$$$; \
-	mdoc2man dccsend.mdoc > dccsend.$$TEMPEXT && diff -I NiH dccsend.$$TEMPEXT dccsend.man \
-		|| mv dccsend.$$TEMPEXT dccsend.man; \
-	mdoc2man dccserver.mdoc > dccserver.$$TEMPEXT && diff -I NiH dccserver.$$TEMPEXT dccserver.man \
-		|| mv dccserver.$$TEMPEXT dccserver.man; \
-	rm -f dccsend.$$TEMPEXT dccserver.$$TEMPEXT
+SUFFIXES=.man .mdoc .html
+MDOCPAGES=dccsend.mdoc dccserver.mdoc
+MANPAGES=${MDOCPAGES:.mdoc=.man}
+
+.mdoc.man:
+	mdoc2man $< > $@.$$$$ && diff -I NiH $@.$$$$ $@ || mv $@.$$$$ $@; \
+	rm -f $@.$$$$
+
+.mdoc.html:
+	nroff -mdoc2html $< | sed -e "s,../html1/,," > $@.$$$$ && mv $@.$$$$ $@
+
+update-man: ${MANPAGES}

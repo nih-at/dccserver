@@ -3,7 +3,7 @@
 # init
 
 AC_PREREQ(2.57)
-AC_REVISION([$NiH: configure.ac,v 1.28 2003/11/02 00:04:13 wiz Exp $])
+AC_REVISION([$NiH: configure.ac,v 1.29 2003/11/02 11:46:10 wiz Exp $])
 AC_INIT([dccserver],[0.4a],[wiz@danbala.tuwien.ac.at])
 AC_CONFIG_SRCDIR([dccserver.c])
 AC_CONFIG_HEADERS([config.h])
@@ -44,7 +44,7 @@ in
 	*) MANFMT=man;;
 esac
 
-AC_CONFIG_LINKS([dccserver.1:dccserver.${MANFMT} dccsend.1:dccsend.${MANFMT}])
+AC_SUBST(MANFMT, [${MANFMT}])
 
 AC_CONFIG_FILES([Makefile lib/Makefile])
 AC_OUTPUT

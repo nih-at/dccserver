@@ -1,3 +1,8 @@
+2005-07-19  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
+
+	* Makefile.am: Simplify man page handling.
+	* configure.ac (MANFMT): Simplify man page handling.
+
 2003-11-02  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
 
 	* configure.ac: bump to 0.4.
