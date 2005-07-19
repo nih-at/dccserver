@@ -126,7 +126,7 @@ in front:
 .TP 12
 \fBclose X\fR
 to close the connection with ID X, e.g.,
-\fBclose 3.\fR
+\fBclose 3\fR.
 .TP 12
 \fBinfo\fR
 to get an overview of the current connection state.
