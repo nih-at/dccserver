@@ -1,4 +1,4 @@
-0.4:
+0.4 (2003-11-02)
 
 	Added "close" command; close particular connections.
 
@@ -22,7 +22,8 @@
 	Add contrib/dccsend.pl from David Oftedal <david@start.no>
 	for X-Chat users.
 
-0.3:
+0.3 (2003-04-07)
+
 	Add dccsend program to send files to a remote dccserver.
 	Requested by Antti Aaltonen <antzu@iki.fi>.
 
@@ -47,7 +48,8 @@
 
 	Some minor improvements, see ChangeLog.
 
-0.2:
+0.2 (2003-01-28)
+
 	Allow receiving more bytes than filesize; show a warning.
 	Could be useful when sender doesn't have the complete file when
 	starting the dcc send, and in some other cases. Based on patches
@@ -59,5 +61,6 @@
 
 	Debian package support, provided by Aubin Paul <debian@outlyer.org>.
 
-0.1:
+0.1 (2002-10-16)
+
 	First public release.
