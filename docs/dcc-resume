@@ -1,0 +1,13 @@
+ ===
+ sender->receiver:
+ "PRIVMSG bla :\001DCC SEND %s %lu %d %ld\001\r\n", filename, addr, port, size
+
+ receiver->sender
+ "PRIVMSG bla :\001DCC RESUME %s %d %lu\001r\n", filename, port, resumable
+
+ sender->receiver
+ "PRIVMSG bla :\001DCC ACCEPT %s %d %lu\001\r\n", filename, port, resumable
+
+ receiver->sender
+  - connect to dataport on sender
+ ===

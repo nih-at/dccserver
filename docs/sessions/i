@@ -1,0 +1,22 @@
+danbala:~:> telnet 212.183.95.197 59
+Trying 212.183.95.197...
+Connected to N687P005.dipool.highway.telekom.at.
+Escape character is '^]'.
+100 helo
+101 Worano
+helo
+super
+quit
+quit
+Connection closed by foreign host.
+danbala:~:> telnet 212.183.95.197 59
+Trying 212.183.95.197...
+Connected to N687P005.dipool.highway.telekom.at.
+Escape character is '^]'.
+110 helo
+111 Worano
+mIRC32 v5.91 File Server K.Mardam-Bey
+[\]
+help
+Use: cd dir ls get read help exit
+
