@@ -3,8 +3,8 @@
 # init
 
 AC_PREREQ(2.57)
-AC_REVISION([$NiH: configure.ac,v 1.29 2003/11/02 11:46:10 wiz Exp $])
-AC_INIT([dccserver],[0.4a],[wiz@danbala.tuwien.ac.at])
+AC_REVISION([$NiH: configure.ac,v 1.30 2005/07/19 11:04:10 wiz Exp $])
+AC_INIT([dccserver],[0.4b],[wiz@danbala.tuwien.ac.at])
 AC_CONFIG_SRCDIR([dccserver.c])
 AC_CONFIG_HEADERS([config.h])
 AM_INIT_AUTOMAKE
@@ -31,6 +31,11 @@ AC_MSG_CHECKING([checking for getaddrinfo])
 AC_TRY_LINK([#include <netdb.h>], [getaddrinfo(0,0,0,0);],
 [AC_MSG_RESULT([yes]); AC_DEFINE([HAVE_GETADDRINFO], [1], [Define to 1 if you have the `getaddrinfo' function.])],
 [AC_MSG_RESULT([no]); AC_LIBOBJ(getaddrinfo)])
+
+case $host_os
+in
+	darwin8*) AC_CACHE_VAL([ac_cv_func_poll],[ac_cv_func_poll=no]);;
+esac
 AC_REPLACE_FUNCS([err errx poll strlcpy warn warnx])
 
 # types
