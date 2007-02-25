@@ -1,0 +1,5 @@
+# also search in .. for config.h
+INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR}
+ ${CMAKE_CURRENT_BINARY_DIR}/..)
+
+ADD_LIBRARY(dcc STATIC dcc.c io.c util.c)
