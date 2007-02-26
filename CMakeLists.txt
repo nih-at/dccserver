@@ -1,3 +1,5 @@
+# $NiH$
+
 PROJECT(dccserver)
 
 INCLUDE(CheckFunctionExists)

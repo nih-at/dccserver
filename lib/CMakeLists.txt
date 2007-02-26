@@ -1,3 +1,5 @@
+# $NiH$
+
 INCLUDE(CheckFunctionExists)
 
 MACRO(REPLACE_FUNCTIONS sources)
