@@ -14,6 +14,8 @@ noinst_HEADERS=	dccserver.h
 EXTRA_DIST=	dccserver.man dccserver.mdoc \
 		dccsend.man dccsend.mdoc \
 		contrib/dccsend.pl \
+		CMakeLists.txt lib/CMakeLists.txt \
+		cmake-config.h.in \
 		debian/changelog debian/control debian/copyright debian/dirs \
 		debian/docs debian/rules
 
