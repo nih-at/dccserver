@@ -1,11 +1,11 @@
-# $NiH: CMakeLists.txt,v 1.3 2007/02/26 13:49:52 wiz Exp $
+# $NiH: CMakeLists.txt,v 1.4 2007/02/26 15:35:51 wiz Exp $
 
-PROJECT(dccserver)
+PROJECT(dccserver C)
 
 INCLUDE(CheckFunctionExists)
 INCLUDE(CheckIncludeFiles)
 INCLUDE(CheckLibraryExists)
-INCLUDE(CheckSymbolExists)
+#INCLUDE(CheckSymbolExists)
 
 SET(PACKAGE_NAME "dccserver")
 SET(PACKAGE_VERSION "0.4b")
@@ -51,30 +51,39 @@ CHECK_INCLUDE_FILES(err.h HAVE_ERR_H)
 
 CHECK_FUNCTION_EXISTS(getaddrinfo HAVE_GETADDRINFO)
 IF(NOT HAVE_GETADDRINFO)
-  CHECK_LIBRARY_EXISTS(socket getaddrinfo "" CMAKE_LIB_SOCKET_HAS_GETADDRINFO)
-  IF(CMAKE_LIB_SOCKET_HAS_GETADDRINFO)
-    SET(HAVE_GETADDRINFO 1)
+  CHECK_LIBRARY_EXISTS(socket getaddrinfo "" HAVE_GETADDRINFO)
+  IF(HAVE_GETADDRINFO)
     TARGET_LINK_LIBRARIES(dccsend socket)
     TARGET_LINK_LIBRARIES(dccserver socket)
-  ELSE(CMAKE_LIB_SOCKET_HAS_GETADDRINFO)
+  ELSE(HAVE_GETADDRINFO)
     SET(EXTRA_LIB_FILES ${EXTRA_LIB_FILES} getaddrinfo.c)
-  ENDIF(CMAKE_LIB_SOCKET_HAS_GETADDRINFO)
+  ENDIF(HAVE_GETADDRINFO)
 ENDIF(NOT HAVE_GETADDRINFO)
 
 CHECK_FUNCTION_EXISTS(inet_ntoa HAVE_INET_NTOA)
 IF(NOT HAVE_INET_NTOA)
-  CHECK_LIBRARY_EXISTS(nsl inet_ntoa "" CMAKE_LIB_NSL_HAS_INET_NTOA)
-  IF(CMAKE_LIB_NSL_HAS_INET_NTOA)
-    SET(HAVE_INET_NTOA 1)
+  CHECK_LIBRARY_EXISTS(nsl inet_ntoa "" HAVE_INET_NTOA)
+  IF(HAVE_INET_NTOA)
     TARGET_LINK_LIBRARIES(dccserver nsl)
-  ELSE(CMAKE_LIB_NSL_HAS_INET_NTOA)
-    # XXX FATALERROR
-  ENDIF(CMAKE_LIB_NSL_HAS_INET_NTOA)
+  ELSE(HAVE_INET_NTOA)
+    MESSAGE(FATAL_ERROR "inet_ntoa() not found")
+  ENDIF(HAVE_INET_NTOA)
 ENDIF(NOT HAVE_INET_NTOA)
 
-# XXX: doesn't work on Irix or Linux, because compiler doesn't like
+# Manually check for socklen_t. Using CHECK_SYMBOL_EXISTS doesn't work
+# on Irix or Linux, because the compilers don't like
 # cmakeRequireSymbol(0,&socklen_t);
-CHECK_SYMBOL_EXISTS(socklen_t "sys/types.h;sys/socket.h" HAVE_SOCKLEN_T)
+#CHECK_SYMBOL_EXISTS(socklen_t "sys/types.h;sys/socket.h" HAVE_SOCKLEN_T)
+MESSAGE("-- Looking for socklen_t")
+TRY_COMPILE(HAVE_SOCKLEN_T
+  ${CMAKE_CURRENT_BINARY_DIR}
+  ${CMAKE_CURRENT_SOURCE_DIR}/socklen_t.c
+  OUTPUT_VARIABLE SLT)
+IF(HAVE_SOCKLEN_T)
+  MESSAGE("-- Looking for socklen_t - found")
+ELSE(HAVE_SOCKLEN_T)
+  MESSAGE("-- Looking for socklen_t - not found:\n${SLT}")
+ENDIF(HAVE_SOCKLEN_T)
 
 # custom targets
 
