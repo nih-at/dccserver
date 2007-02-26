@@ -1,4 +1,4 @@
-/* $NiH: dccserver.c,v 1.63 2003/05/14 09:45:10 wiz Exp $ */
+/* $NiH: dccserver.c,v 1.64 2003/11/02 11:44:47 wiz Exp $ */
 /*-
  * Copyright (c) 2002, 2003 Thomas Klausner.
  * All rights reserved.
@@ -43,13 +43,11 @@
 #endif /* HAVE_ERR_H */
 #include <errno.h>
 #include <fcntl.h>
-#ifdef HAVE_POLL_H
+#ifdef HAVE_POLL
 #include <poll.h>
-#elif HAVE_SYS_POLL_H
-#include <sys/poll.h>
 #else
-#include "poll.h"
-#endif /* HAVE_POLL_H || HAVE_SYS_POLL_H */
+#include "pollemu.h"
+#endif /* HAVE_POLL */
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>

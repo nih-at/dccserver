@@ -1,4 +1,4 @@
-/* $NiH: io.c,v 1.2 2003/05/14 09:21:02 wiz Exp $ */
+/* $NiH: io.c,v 1.3 2003/05/14 09:45:11 wiz Exp $ */
 /*-
  * Copyright (c) 2003 Thomas Klausner.
  * All rights reserved.
@@ -37,13 +37,11 @@
 #include <err.h>
 #endif
 #include <errno.h>
-#ifdef HAVE_POLL_H
+#ifdef HAVE_POLL
 #include <poll.h>
-#elif HAVE_SYS_POLL_H
-#include <sys/poll.h>
 #else
-#include "poll.h"
-#endif /* HAVE_POLL_H || HAVE_SYS_POLL_H */
+#include "pollemu.h"
+#endif /* HAVE_POLL */
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>

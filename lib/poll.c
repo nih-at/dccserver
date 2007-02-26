@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------*\
-  $Id: poll.c,v 1.4 2003/01/01 19:02:29 bmc Exp $
+  $Id: poll.c,v 1.1 2003/05/12 21:33:32 wiz Exp $
 
   NAME
 
@@ -76,7 +76,7 @@
 #include <sys/time.h>                        /* time definitions */
 #include <assert.h>                          /* assertion macros */
 #include <string.h>                          /* string functions */
-#include "poll.h"                            /* this package */
+#include "pollemu.h"                            /* this package */
 
 /*---------------------------------------------------------------------------*\
 				  Macros

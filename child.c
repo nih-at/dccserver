@@ -1,4 +1,4 @@
-/* $NiH: child.c,v 1.19 2003/05/24 23:53:49 wiz Exp $ */
+/* $NiH: child.c,v 1.20 2003/10/26 10:10:13 wiz Exp $ */
 /*-
  * Copyright (c) 2003 Thomas Klausner.
  * All rights reserved.
@@ -40,13 +40,11 @@
 #endif /* HAVE_ERR_H */
 #include <errno.h>
 #include <fcntl.h>
-#ifdef HAVE_POLL_H
+#ifdef HAVE_POLL
 #include <poll.h>
-#elif HAVE_SYS_POLL_H
-#include <sys/poll.h>
 #else
-#include "poll.h"
-#endif /* HAVE_POLL_H || HAVE_SYS_POLL_H */
+#include "pollemu.h"
+#endif /* HAVE_POLL */
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
