@@ -1,5 +1,29 @@
+INCLUDE(CheckFunctionExists)
+
+MACRO(REPLACE_FUNCTIONS sources)
+  FOREACH(name ${ARGN})
+    STRING(TOUPPER have_${name} SYMBOL_NAME)
+    CHECK_FUNCTION_EXISTS(${name} ${SYMBOL_NAME})
+    IF(NOT ${SYMBOL_NAME})
+      SET(${sources} ${${sources}} ${name}.c)
+    ENDIF(NOT ${SYMBOL_NAME})
+  ENDFOREACH(name)
+ENDMACRO(REPLACE_FUNCTIONS)
+
 # also search in .. for config.h
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR}
- ${CMAKE_CURRENT_BINARY_DIR}/..)
+  ${CMAKE_CURRENT_BINARY_DIR}/..)
 
-ADD_LIBRARY(dcc STATIC dcc.c io.c util.c)
+SET(LIB_SOURCES dcc.c io.c util.c)
+
+REPLACE_FUNCTIONS(LIB_SOURCES err errx poll strlcpy warn warnx)
+
+# Darwin's poll() is broken up to at least 10.5
+IF(CMAKE_SYSTEM_NAME MATCHES DARWIN)
+  IF (HAVE_POLL)
+    SET(HAVE_POLL)
+    SET(LIB_SOURCES ${LIB_SOURCES} poll.c)
+  ENDIF(HAVE_POLL)
+ENDIF(CMAKE_SYSTEM_NAME MATCHES DARWIN)
+
+ADD_LIBRARY(dcc STATIC ${LIB_SOURCES} ${EXTRA_LIB_FILES})
