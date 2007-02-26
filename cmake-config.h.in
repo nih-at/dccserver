@@ -1,6 +1,14 @@
 #ifndef HAD_CONFIG_H
 #define HAD_CONFIG_H
+#cmakedefine HAVE_ERR
 #cmakedefine HAVE_ERR_H
+#cmakedefine HAVE_ERRX
+#cmakedefine HAVE_GETADDRINFO
+#cmakedefine HAVE_POLL
+#cmakedefine HAVE_SOCKLEN_T
+#cmakedefine HAVE_STRLCPY
+#cmakedefine HAVE_WARN
+#cmakedefine HAVE_WARNX
 #cmakedefine HAVE_GETADDRINFO
 #define PACKAGE_STRING "@PACKAGE_STRING@"
 #define PACKAGE_VERSION "@PACKAGE_VERSION@"
