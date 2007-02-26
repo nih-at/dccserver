@@ -1,4 +1,4 @@
-# $NiH: CMakeLists.txt,v 1.4 2007/02/26 15:35:51 wiz Exp $
+# $NiH: CMakeLists.txt,v 1.5 2007/02/26 16:12:40 wiz Exp $
 
 PROJECT(dccserver C)
 
@@ -95,9 +95,6 @@ ENDIF(CMAKE_SYSTEM_NAME MATCHES BSD)
 
 SET(MAN_PAGES dccserver dccsend) 
 FOREACH(MAN ${MAN_PAGES})
-  # XXX: when I add "OUTPUT" as first argument, the target is called "OUTPUT"
-  # and ${MAN}.man is the first COMMAND line in it. Seems to contradict
-  # documentation.
   ADD_CUSTOM_TARGET(${MAN}.man
     DEPENDS ${MAN}.mdoc
     COMMAND mdoc2man ${MAN}.mdoc > ${MAN}.new
