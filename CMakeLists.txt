@@ -1,4 +1,4 @@
-# $NiH$
+# $NiH: CMakeLists.txt,v 1.3 2007/02/26 13:49:52 wiz Exp $
 
 PROJECT(dccserver)
 
@@ -101,7 +101,7 @@ FOREACH(MAN ${MAN_PAGES})
     COMMAND nroff -mdoc2html ${MAN}.mdoc | sed -e "s,../html[0-9]/,," > ${MAN}.html
     COMMENT Updating HTML page ${MAN}.html
     )
-ENDFOREACH(MAN ${MAN_PAGES})
+ENDFOREACH(MAN)
 
 ADD_CUSTOM_TARGET(update-man
   DEPENDS dccserver.man dccsend.man)
