@@ -1,11 +1,10 @@
-# $NiH: CMakeLists.txt,v 1.6 2007/02/26 18:44:52 wiz Exp $
+# $NiH: CMakeLists.txt,v 1.7 2007/03/02 11:13:15 wiz Exp $
 
 PROJECT(dccserver C)
 
 INCLUDE(CheckFunctionExists)
 INCLUDE(CheckIncludeFiles)
 INCLUDE(CheckLibraryExists)
-#INCLUDE(CheckSymbolExists)
 
 SET(PACKAGE_NAME "dccserver")
 SET(PACKAGE_VERSION_MAJOR "0")
@@ -99,19 +98,19 @@ ENDIF(HAVE_SOCKLEN_T)
 
 SET(MAN_PAGES dccserver dccsend) 
 FOREACH(MAN ${MAN_PAGES})
-  ADD_CUSTOM_TARGET(${MAN}.man
+ ADD_CUSTOM_TARGET(${MAN}.man
     DEPENDS ${MAN}.mdoc
-    COMMAND mdoc2man ${MAN}.mdoc > ${MAN}.new
-    COMMAND diff -I NiH ${MAN}.new ${MAN}.man || mv ${MAN}.new ${MAN}.man
+    COMMAND mdoc2man ${CMAKE_CURRENT_SOURCE_DIR}/${MAN}.mdoc > ${MAN}.new
+    COMMAND diff -I NiH ${MAN}.new ${CMAKE_CURRENT_SOURCE_DIR}/${MAN}.man || mv ${MAN}.new ${CMAKE_CURRENT_SOURCE_DIR}/${MAN}.man
     COMMAND rm -f ${MAN}.new
     COMMENT Updating man page ${MAN}.man
     )
   ADD_CUSTOM_TARGET(${MAN}.html
-    DEPENDS ${MAN}.mdoc
-    COMMAND nroff -mdoc2html ${MAN}.mdoc | sed -e "s,../html[0-9]/,," > ${MAN}.html
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${MAN}.mdoc
+    COMMAND nroff -mdoc2html ${CMAKE_CURRENT_SOURCE_DIR}/${MAN}.mdoc | sed -e "s,../html[0-9]/,," > ${MAN}.html
     COMMENT Updating HTML page ${MAN}.html
     )
-ENDFOREACH(MAN)
+ ENDFOREACH(MAN)
 
 ADD_CUSTOM_TARGET(update-man
   DEPENDS dccserver.man dccsend.man)
@@ -164,13 +163,7 @@ SET(CPACK_SOURCE_IGNORE_FILES
 SET(CPACK_SOURCE_STRIP_FILES "")
 INCLUDE(CPack)
 
-#noinst_HEADERS=	dccserver.h
-#
-#EXTRA_DIST=	dccserver.man dccserver.mdoc \
-#		dccsend.man dccsend.mdoc \
-#		contrib/dccsend.pl \
-#		debian/changelog debian/control debian/copyright debian/dirs \
-#		debian/docs debian/rules
+ADD_CUSTOM_TARGET(dist make package_source)
 
 # write out config file
 CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/cmake-config.h.in
