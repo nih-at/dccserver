@@ -1,66 +1,66 @@
 0.4 (2003-11-02)
 
-	Added "close" command; close particular connections.
+- Added "close" command; close particular connections.
 
-	Added "info" command; shows current transfer states for all
-	connections. Sending dccserver a SIGINFO (or SIGUSR1 on
-	systems without SIGINFO) signal works too.
+- Added "info" command; shows current transfer states for all
+  connections. Sending dccserver a SIGINFO (or SIGUSR1 on
+  systems without SIGINFO) signal works too.
 
-	Added proper timeout handling.
+- Added proper timeout handling.
 
-	Added poll replacement function from Brian M Clapper
-	for building on Darwin.
+- Added poll replacement function from Brian M Clapper
+  for building on Darwin.
 
-	Show time taken by transfers and transfer rate.
+- Show time taken by transfers and transfer rate.
 
-	dccserver can now listen on multiple ports; just specify
-	-p multiple times.
-	Requested by Maik Zumstrull <Maik.Zumstrull@gmx.de>.
+- dccserver can now listen on multiple ports; just specify
+  -p multiple times.
+  Requested by Maik Zumstrull <Maik.Zumstrull@gmx.de>.
 
-	Fixed dccsend program to work with mIRC.
+- Fixed dccsend program to work with mIRC.
 
-	Add contrib/dccsend.pl from David Oftedal <david@start.no>
-	for X-Chat users.
+- Add contrib/dccsend.pl from David Oftedal <david@start.no>
+  for X-Chat users.
 
 0.3 (2003-04-07)
 
-	Add dccsend program to send files to a remote dccserver.
-	Requested by Antti Aaltonen <antzu@iki.fi>.
+- Add dccsend program to send files to a remote dccserver.
+  Requested by Antti Aaltonen <antzu@iki.fi>.
 
-	Try to handle it more gracefully when two or more clients
-	want to write to the same file. Idea from Rudolf Polzer.
+- Try to handle it more gracefully when two or more clients
+  want to write to the same file. Idea from Rudolf Polzer.
 
-	Add lots of fflushes, some from Rudolf Polzer.
+- Add lots of fflushes, some from Rudolf Polzer.
 
-	Strip paths from file name (some weird clients send them).
-	Requested by Athan <code@miggy.org>.
+- Strip paths from file name (some weird clients send them).
+  Requested by Athan <code@miggy.org>.
 
-	Remove superfluous seteuid call. Noted by Athan <code@miggy.org>
+- Remove superfluous seteuid call. Noted by Athan <code@miggy.org>
 
-	Mention client ID/client name in most places. Based on patches
-	from Rudolf Polzer <atfield@durchnull.de>.
+- Mention client ID/client name in most places. Based on patches
+  from Rudolf Polzer <atfield@durchnull.de>.
 
-	Add -e/-i options for easy embedding in irssi. Idea from
-	from Rudolf Polzer <atfield@durchnull.de>.
+- Add -e/-i options for easy embedding in irssi. Idea from
+  from Rudolf Polzer <atfield@durchnull.de>.
 
-	Add "quit" command to exit dccserver. Idea from Rudolf
-	Polzer <atfield@durchnull.de>.
+- Add "quit" command to exit dccserver. Idea from Rudolf
+  Polzer <atfield@durchnull.de>.
 
-	Some minor improvements, see ChangeLog.
+- Some minor improvements, see ChangeLog.
 
 0.2 (2003-01-28)
 
-	Allow receiving more bytes than filesize; show a warning.
-	Could be useful when sender doesn't have the complete file when
-	starting the dcc send, and in some other cases. Based on patches
-	by Per von Zweigbergk <pvz@e.kth.se>.
+- Allow receiving more bytes than filesize; show a warning.
+  Could be useful when sender doesn't have the complete file when
+  starting the dcc send, and in some other cases. Based on patches
+  by Per von Zweigbergk <pvz@e.kth.se>.
 
-	Install as setuid root; drop privileges as soon as possible,
-	and chroot to current directory. Based on patches by
-	Per von Zweigbergk <pvz@e.kth.se>.
+- Install as setuid root; drop privileges as soon as possible,
+  and chroot to current directory. Based on patches by
+  Per von Zweigbergk <pvz@e.kth.se>.
 
-	Debian package support, provided by Aubin Paul <debian@outlyer.org>.
+- Debian package support, provided by Aubin Paul <debian@outlyer.org>.
 
 0.1 (2002-10-16)
 
-	First public release.
+- First public release.
