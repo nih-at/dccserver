@@ -10,6 +10,7 @@ Possible changes
 . readline
 . remove stalled time from average speed calculation
 . don't send data to 'Send' connections -- they quit in this case
+. set default channel to talk to instead of prefixing every time
 . regression tests
 
 dccsend:
