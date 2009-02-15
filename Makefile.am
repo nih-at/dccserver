@@ -25,8 +25,8 @@ AUTOMAKE_OPTIONS=	dist-bzip2
 SUBDIRS=	lib
 
 install-exec-hook:
-	@(chown root $(bindir)/dccserver && \
-		chmod u+s $(bindir)/dccserver && \
+	@(chown root $(DESTDIR)$(bindir)/dccserver && \
+		chmod u+s $(DESTDIR)$(bindir)/dccserver && \
 		echo NOTE: dccserver has been installed setuid root.) || \
 	echo dccserver NOT installed setuid root.
 
