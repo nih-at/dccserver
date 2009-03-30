@@ -52,7 +52,7 @@
 #include "dccserver.h"
 #include "dcc.h"
 #include "io.h"
-#include "util.h"
+#include "strip_path.h"
 
 #ifndef HAVE_ERR
 void err(int, const char *, ...);

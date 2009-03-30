@@ -65,7 +65,7 @@ void warnx(const char *, ...);
 
 #include "dcc.h"
 #include "io.h"
-#include "util.h"
+#include "strip_path.h"
 
 struct transfer_state {
     char *filename;

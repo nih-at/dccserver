@@ -31,7 +31,7 @@
  */
 
 #include <string.h>
-#include "util.h"
+#include "strip_path.h"
 
 /* some fserves incorrectly include the complete path -- */
 /* strip it off */
