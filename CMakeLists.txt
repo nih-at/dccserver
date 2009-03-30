@@ -1,5 +1,7 @@
 # $NiH: CMakeLists.txt,v 1.7 2007/03/02 11:13:15 wiz Exp $
 
+CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
+
 PROJECT(dccserver C)
 
 INCLUDE(CheckFunctionExists)
