@@ -249,6 +249,7 @@ setup_read_file(int fd, char *filename, long filesize)
 	    if (lseek(out, offset, SEEK_SET) != offset) {
 		warn("error seeking to beginning -- giving up");
 		tell_client(fd, 151, NULL);
+		close(out);
 		return NULL;
 	    }
 	}
