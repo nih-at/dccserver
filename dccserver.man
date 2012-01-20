@@ -1,8 +1,8 @@
 .\" Converted with mdoc2man 0.2
-.\" from NiH: dccserver.mdoc,v 1.20 2003/11/02 11:48:53 wiz Exp 
-.\" $NiH: dccserver.mdoc,v 1.20 2003/11/02 11:48:53 wiz Exp $
+.\" from NiH: dccserver.mdoc,v 1.19 2003/11/02 11:44:47 wiz Exp 
+.\" $NiH: dccserver.mdoc,v 1.19 2003/11/02 11:44:47 wiz Exp $
 .\"
-.\" Copyright (c) 2002, 2003 Thomas Klausner.
+.\" Copyright (c) 2002, 2003, 2012 Thomas Klausner.
 .\" All rights reserved.
 .\"
 .\" Redistribution and use in source and binary forms, with or without
@@ -30,7 +30,7 @@
 .\" OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
 .\" OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
-.TH DCCSERVER 1 "May 11, 2003" NiH
+.TH DCCSERVER 1 "January 20, 2012" NiH
 .SH "NAME"
 dccserver \- simulate mIRC's /dccserver command
 .SH "SYNOPSIS"
@@ -162,7 +162,7 @@ dccsend(1)
 .SH "AUTHORS"
 .B dccserver
 was written by
-Thomas Klausner <wiz@danbala.tuwien.ac.at.>
+Thomas Klausner <tk@giga.or.at.>
 .SH "BUGS"
 Get and Fserve modes are not yet supported.
 .SH "SECURITY CONSIDERATIONS"

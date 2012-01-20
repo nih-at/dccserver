@@ -4,7 +4,7 @@
 
 AC_PREREQ(2.57)
 AC_REVISION([$NiH: configure.ac,v 1.30 2005/07/19 11:04:10 wiz Exp $])
-AC_INIT([dccserver],[0.4b],[wiz@danbala.tuwien.ac.at])
+AC_INIT([dccserver],[0.5],[tk@giga.or.at])
 AC_CONFIG_SRCDIR([dccserver.c])
 AC_CONFIG_HEADERS([config.h])
 AM_INIT_AUTOMAKE
