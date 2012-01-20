@@ -1,3 +1,9 @@
+0.5 (2012-01-20)
+
+- cmake support (autoconf still supported)
+
+- portability fixes
+
 0.4 (2003-11-02)
 
 - Added "close" command; close particular connections.
