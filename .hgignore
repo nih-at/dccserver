@@ -12,6 +12,7 @@
 ^GTAGS$
 ^aclocal.m4$
 ^autom4te\.cache/
+^ar-lib$
 ^build
 ^compile$
 ^config\.(guess|h|h\.in|log|status|sub)$
