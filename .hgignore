@@ -32,3 +32,6 @@
 ^stamp-h1$
 ^test-driver$
 ~$
+^dccsend$
+^dccserver$
+^lib/libdcc.a$
