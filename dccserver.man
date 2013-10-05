@@ -1,45 +1,17 @@
-.\" Converted with mdoc2man 0.2
-.\" from NiH: dccserver.mdoc,v 1.19 2003/11/02 11:44:47 wiz Exp 
-.\" $NiH: dccserver.mdoc,v 1.19 2003/11/02 11:44:47 wiz Exp $
-.\"
-.\" Copyright (c) 2002, 2003, 2012 Thomas Klausner.
-.\" All rights reserved.
-.\"
-.\" Redistribution and use in source and binary forms, with or without
-.\" modification, are permitted provided that the following conditions
-.\" are met:
-.\" 1. Redistributions of source code must retain the above copyright
-.\"    notice, this list of conditions and the following disclaimer.
-.\" 2. Redistributions in binary form must reproduce the above
-.\"    copyright notice, this list of conditions and the following
-.\"    disclaimer in the documentation and/or other materials provided
-.\"    with the distribution.
-.\" 3. The name of the author may not be used to endorse or promote
-.\"    products derived from this software without specific prior
-.\"    written permission.
-.\"
-.\" THIS SOFTWARE IS PROVIDED BY THOMAS KLAUSNER ``AS IS'' AND ANY
-.\" EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-.\" PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE FOUNDATION OR
-.\" CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-.\" SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-.\" LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF
-.\" USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-.\" ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-.\" OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
-.\" OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
-.\" SUCH DAMAGE.
-.TH DCCSERVER 1 "January 20, 2012" NiH
+.TH "DCCSERVER" "1" "January 20, 2012" "NiH" "General Commands Manual"
+.nh
+.if n .ad l
 .SH "NAME"
-dccserver \- simulate mIRC's /dccserver command
+\fBdccserver\fR
+\- simulate mIRC's /dccserver command
 .SH "SYNOPSIS"
-.B dccserver
-[\fB-ehiv\fR]
-[\fB-n\fR \fBnickname\fR]
-[\fB-p\fR \fBport\fR]
+.HP 10n
+\fBdccserver\fR
+[\fB\-ehiv\fR]
+[\fB\-n\fR\ \fInickname\fR]
+[\fB\-p\fR\ \fIport\fR]
 .SH "DESCRIPTION"
-.B dccserver
+\fBdccserver\fR
 aims to provide the functions of mIRC's /dccserver command.
 .PP
 Currently, Chat and Send (including resume) modes are supported.
@@ -52,135 +24,135 @@ transfers, it is 2 minutes.
 Chats have no timeout.
 .PP
 Supported options:
-.RS
-.TP 15
-\fB-e\fR
+.TP 15n
+\fB\-e\fR
 Echo lines input by the user.
 Useful e.g. if you are using dccserver in an
 irssi(1)
 window (see also the
-\fB-i\fR
+\fB\-i\fR
 option and the
-EXAMPLES
+\fIEXAMPLES\fR
 section).
-.TP 15
-\fB-h\fR
+.TP 15n
+\fB\-h\fR
 Display a short help message.
-.TP 15
-\fB-i\fR
+.TP 15n
+\fB\-i\fR
 Do not filter out control characters for color, bold, reverse, and
 underlined text.
 Useful if your terminal or wrapper can interpret them.
-.TP 15
-\fB-n\fR \fBnickname\fR
+.TP 15n
+\fB\-n\fR \fInickname\fR
 Set nickname used in handshake to
-\fBnickname.\fR
+\fInickname\fR.
 Should be the same nickname that you use on IRC, otherwise most
 clients will complain and close the connection.
 Defaults to
-``dccserver''.
-.TP 15
-\fB-p\fR \fBport\fR
+\(lqdccserver\(rq.
+.TP 15n
+\fB\-p\fR \fIport\fR
 Listen for connections on port
-\fBport.\fR
+\fIport\fR.
 You can specify this argument multiple times to listen on more than
 one port.
 If no
-\fB-p\fR
+\fB\-p\fR
 is given,
-.B dccserver
+\fBdccserver\fR
 will listen on port 59, since that is mIRC's default port.
 Please note that you have to have root privileges to bind to ports
 below 1024.
 See
-SECURITY CONSIDERATIONS
+\fISECURITY CONSIDERATIONS\fR
 below.
-.TP 15
-\fB-v\fR
+.TP 15n
+\fB\-v\fR
 Display program name and version number.
-.RE
 .PP
 After a client has connected, you can send commands to it manually.
 This is useful for chats or fserves.
 The syntax is
-``<nn>: <text>''
+\(lq<nn>: <text>\(rq
 where
-``<nn>''
+\(lq<nn>\(rq
 is the number of the child, and
-``<text>''
+\(lq<text>\(rq
 the text you want to send.
 For example:
-``0:\ dir''.
+\(lq0:\ dir\(rq.
 Please note that the
-``:''
+\(lq\&:\(rq
 and the space are necessary.
 .PP
 Text coming from the remote clients will be shown prepended by their
 nickname and child ID.
 .PP
 You can give
-.B dccserver
+\fBdccserver\fR
 commands by entering one of the following keywords without a child ID
 in front:
-.RS
-.TP 12
+.TP 12n
 \fBclose X\fR
 to close the connection with ID X, e.g.,
 \fBclose 3\fR.
-.TP 12
+.TP 12n
 \fBinfo\fR
 to get an overview of the current connection state.
-.TP 12
+.TP 12n
 \fBquit\fR
 to close all connections and exit the program.
-.RE
 .SH "EXAMPLES"
 Listen on ports 59 and 37334 as user
-``yournick'' :
-.PP
-.Bd \-literal \-offset indent
-dccserver \-n yournick \-p 59 \-p 37334
-.Ed
+\(lqyournick\(rq:
+.nf
+.sp
+.RS 6n
+dccserver -n yournick -p 59 -p 37334
+.RE
+.fi
 .PP
 With
 irssi(1),
 you could create the following alias (one line):
-.PP
-.Bd \-literal \-offset indent
+.nf
+.sp
+.RS 6n
 /alias DCCSERVER
  window new hidden;
  window name dccserver$0;
  echo dccserver for $N on port $0;
- exec \-name dccserver$0 \-nosh \-interactive \-window dccserver \-n $N \-p $0 \-i \-e
-.Ed
+ exec -name dccserver$0 -nosh -interactive -window dccserver -n $N -p $0 -i -e
+.RE
+.fi
 .PP
 and then open a new window with a dccserver inside with
-``/dccserver 59''
+\(lq/dccserver 59\(rq
 for port 59.
 .SH "SEE ALSO"
 dccsend(1)
 .SH "AUTHORS"
-.B dccserver
+\fBdccserver\fR
 was written by
-Thomas Klausner <tk@giga.or.at.>
+Thomas Klausner <\fItk@giga.or.at\fR>.
 .SH "BUGS"
 Get and Fserve modes are not yet supported.
 .SH "SECURITY CONSIDERATIONS"
 mIRC's default port is 59.
 To bind to ports below 1024, one needs root privileges; for this reason
-.B dccserver
+\fBdccserver\fR
 is installed setuid root.
 To limit damage done in case of trouble,
-.B dccserver
+\fBdccserver\fR
 chroot(2)s
 itself in the current directory and drops the setuid privileges as soon
 as possible.
 .PP
 Alternatively, you can remove the setuid bit from
-.B dccserver
+\fBdccserver\fR
 with
-``\fBchmod u-s /path/to/dccserver\fR''
+\(lq\fBchmod u-s /path/to/dccserver\fR\(rq
 with the limitation that you will only be able to use
-.B dccserver
+\fBdccserver\fR
 on ports above 1024, and you won't get the effect of
 chroot(2).
