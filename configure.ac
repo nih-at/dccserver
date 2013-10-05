@@ -13,6 +13,7 @@ AC_CANONICAL_HOST
 
 AC_PROG_CC
 AC_PROG_RANLIB
+AM_PROG_AR
 
 # header files
 
