@@ -17,4 +17,4 @@ as the master distribution site.
 
 Development on this program has stopped.
 
-Please send bug reports, comments, and praise to Thomas Klausner <tk@giga.or.at>.
+Please send bug reports, comments, and praise to dccserver@nih.at.
