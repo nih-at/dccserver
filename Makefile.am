@@ -15,12 +15,11 @@ EXTRA_DIST=	dccserver.man dccserver.mdoc \
 		dccsend.man dccsend.mdoc \
 		contrib/dccsend.pl \
 		CMakeLists.txt lib/CMakeLists.txt \
+		README.md \
 		cmake-config.h.in \
 		debian/changelog debian/control debian/copyright debian/dirs \
 		debian/docs debian/rules \
 		socklen_t.c
-
-AUTOMAKE_OPTIONS=	dist-bzip2
 
 SUBDIRS=	lib
 
